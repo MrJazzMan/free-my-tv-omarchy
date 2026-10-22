@@ -977,9 +977,13 @@
     renderClock();
     checkNight();
     Data.refresh();
-    if (!saverOn && !sheetOpen() && st.zone !== Z.GALLERY && Date.now() - idleAt > SAVER_AFTER) showSaver();   // miguel-custom: not in the gallery
     if (saverOn) tickSaverClock($('saver').querySelector('.clock'));
   }, 30000);
+  // miguel-custom: the screensaver arms on every screen (it never started while Ajustes do Início, Todos os Apps or
+  // the shelf editor was left open), checked every 5 s instead of with the 30 s refresh (up to 30 s late).
+  setInterval(function () {
+    if (!saverOn && !document.hidden && Date.now() - idleAt > SAVER_AFTER) showSaver();
+  }, 5000);
 
   // For the browser preview and tests.
   window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast};

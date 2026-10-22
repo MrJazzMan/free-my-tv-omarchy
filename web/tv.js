@@ -212,10 +212,15 @@ var TV = (function () {
   }
 
   /** The video sources the TV reports ([{type: 'TV' | 'HDMI' | ..., number}]), or null when it doesn't tell. */
+  // miguel-custom: all: the UE50TU8505 (Tizen 5.5) lists HDMI 1 under "disconnected" even while it shows the box on
+  // it, so a source looked up only among "connected" was never found and the switch gave up. done(all, connectedCount):
+  // the first connectedCount are the connected ones (the TV's own objects, unchanged: setSource takes only those).
   function samsungSources(done) {
     try {
-      window.tizen.systeminfo.getPropertyValue('VIDEOSOURCE', function (v) { done(v && v.connected ? v.connected : null); },
-          function () { done(null); });
+      window.tizen.systeminfo.getPropertyValue('VIDEOSOURCE', function (v) {
+        if (!v || !v.connected) { done(null, 0); return; }
+        done(v.connected.concat(v.disconnected || []), v.connected.length);
+      }, function () { done(null, 0); });
     } catch (e) {
       done(null);
     }
@@ -250,13 +255,18 @@ var TV = (function () {
   function samsungInputs(done) {
     var list = [{id: 'source:TV:1', key: 'live', label: null, symbol: 'live_tv', connected: true}];
     for (var n = 1; n <= 4; n++) list.push({id: 'source:HDMI:' + n, key: 'hdmi' + n, label: 'HDMI ' + n, symbol: 'hdmi', connected: true});
-    samsungSources(function (sources) {
+    samsungSources(function (sources, on) {
       if (sources) {
         for (var i = 1; i < list.length; i++) list[i].connected = false;
         for (var j = 0; j < sources.length; j++) {
           var s = sources[j];
-          if (s.type === 'HDMI' && s.number >= 1 && s.number <= 4) list[s.number].connected = true;
+          if (j < on && s.type === 'HDMI' && s.number >= 1 && s.number <= 4) list[s.number].connected = true;   // miguel-custom: j < on
         }
+        // miguel-custom: the HDMI the TV is on (its main window) is in use, whatever "connected" says.
+        try {
+          var cur = window.tizen.tvwindow.getSource();
+          if (cur && cur.type === 'HDMI' && cur.number >= 1 && cur.number <= 4) list[cur.number].connected = true;
+        } catch (e) {}
       }
       done(list);
     });

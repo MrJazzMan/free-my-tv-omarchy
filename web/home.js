@@ -979,6 +979,14 @@
     loadApps(function () { renderShelf(); renderDrawer(); updateFocus(); Data.refresh(); });
   });
 
+  // miguel-custom: a look chosen before the Omarchy themes existed ("Escuro" here) moves to Tokyo Night once;
+  // Ajustes do Início, Tema can switch back.
+  try {
+    if (!localStorage.getItem('fmtv.miguel.theme')) {
+      localStorage.setItem('fmtv.miguel.theme', '1');
+      if (Prefs.theme() !== 'osaka-jade') Prefs.set('theme', 'tokyo-night');
+    }
+  } catch (e) {}
   I18N.set(Prefs.language());
   fit();
   renderTop();

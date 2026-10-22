@@ -113,7 +113,10 @@ var TV = (function () {
     'UCJa2s9hhC.TED': 'icons/ted.svg',
     'QizQxC7CUf.PlayMovies': 'icons/googleplay.svg',
     'vIutycUzou.SteamLink': 'icons/steam.svg',
-    'geUOM7qimf.FOXPlay': 'icons/fox.svg'
+    'geUOM7qimf.FOXPlay': 'icons/fox.svg',
+    // miguel-custom: Smart Hub's Apple TV icon is an opaque square on its own dark gray, which showed as a box on
+    // the tile; a transparent logo sits seamlessly on the tile's Apple TV gradient instead.
+    'com.samsung.tv.aria-video': 'icons/appletv.svg'
   };
 
   // Names Smart Hub gets wrong: HBO's app has none (so it never reached the shelf), others are long or old.

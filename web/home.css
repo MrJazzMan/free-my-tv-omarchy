@@ -544,7 +544,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
    of the theme when the accent is too weak for a focus ring seen from the sofa. Every focus keeps a 5px ring. */
 body.omarchy #sky { background: var(--darker); }
 body.omarchy #sky .night { background: -webkit-linear-gradient(top, var(--bg), var(--darker)); background: linear-gradient(var(--bg), var(--darker)); }
-body.omarchy #sky .veil { background: rgba(var(--darker-rgb), 0.78); }
+/* the wallpaper (#sky .wall) under a scrim of the theme's background: heavier at the left (title, clock) and the
+   bottom (dock), lighter in the middle; light themes get a stronger, light one so their dark text stays readable. */
+#sky .wall { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; -webkit-transition: opacity 0.6s; transition: opacity 0.6s; }
+#sky .wall.on { opacity: 1; }
+body.omarchy #sky .veil { background: linear-gradient(90deg, rgba(var(--bg-rgb), 0.68), rgba(var(--bg-rgb), 0.24) 58%, rgba(var(--bg-rgb), 0.34)), linear-gradient(rgba(var(--bg-rgb), 0.42), rgba(var(--bg-rgb), 0) 26%, rgba(var(--bg-rgb), 0) 58%, rgba(var(--bg-rgb), 0.74)); }
+body.omarchy-light #sky .veil { background: linear-gradient(90deg, rgba(var(--bg-rgb), 0.82), rgba(var(--bg-rgb), 0.45) 58%, rgba(var(--bg-rgb), 0.52)), linear-gradient(rgba(var(--bg-rgb), 0.55), rgba(var(--bg-rgb), 0) 26%, rgba(var(--bg-rgb), 0) 58%, rgba(var(--bg-rgb), 0.82)); }
+body.omarchy #title, body.omarchy #clock, body.omarchy #quotes { text-shadow: 0 2px 18px rgba(var(--bg-rgb), 0.6); }
 body.omarchy #sky .lift { background: var(--darker); }
 body.omarchy #title, body.omarchy #clock { color: var(--fgb); }
 body.omarchy #clock .date, body.omarchy #quotes { color: var(--fg); }

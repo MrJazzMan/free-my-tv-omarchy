@@ -800,7 +800,21 @@
     return null;
   }
 
-  var themeShown = null;
+  var themeShown = null, wallUrl = '';
+
+  /** The theme's default wallpaper behind the home (one CSS background; only this one is loaded), shown once decoded. */
+  function homeWall(url) {
+    var wall = document.querySelector('#sky .wall');
+    wallUrl = url;
+    if (!url) { setClass(wall, 'on', false); wall.style.backgroundImage = ''; return; }
+    var img = new Image();
+    img.onload = function () {
+      if (wallUrl !== url) return;
+      wall.style.backgroundImage = 'url(' + url + ')';
+      setClass(wall, 'on', true);
+    };
+    img.src = url;
+  }
 
   function applyTheme(id) {
     if (id === themeShown) return;
@@ -808,6 +822,7 @@
     var t = omarchy(id);
     setClass(body, 'omarchy', !!t);
     setClass(body, 'omarchy-light', !!t && t.mode === 'light');
+    homeWall(t && (window.WALLPAPERS || []).indexOf(t.wall) >= 0 ? 'wallpapers/' + t.wall : '');
     if (!t) return;
     for (var k in t.c) {
       if (!t.c.hasOwnProperty(k)) continue;

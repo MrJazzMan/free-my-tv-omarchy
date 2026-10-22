@@ -523,7 +523,10 @@ var Data = (function () {
     /** Night at the location: from sunset to sunrise (the last forecast; without one, 6:00 and 18:00). */
     isNight: function (at) {
       var theme = Prefs.theme();
-      if (theme === 'dark' || theme === 'tokyo-night' || theme === 'osaka-jade') return true;   // miguel-custom: Omarchy themes are dark
+      if (theme === 'dark') return true;
+      // miguel-custom: an Omarchy theme has its own mode (colors.toml)
+      var om = window.OMARCHY || [];
+      for (var t = 0; t < om.length; t++) if (om[t].id === theme) return om[t].mode !== 'light';
       if (theme === 'light') return false;
       var d = new Date(at), mins = d.getHours() * 60 + d.getMinutes();
       function hm(t, fallback) { if (!t) return fallback; var x = new Date(t); return x.getHours() * 60 + x.getMinutes(); }

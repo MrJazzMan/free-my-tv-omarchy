@@ -493,8 +493,8 @@
       {label: tr('Temperatura', 'Temperature', 'Temperatura'), value: unit === 'C' ? '°C' : unit === 'F' ? '°F' : auto,
         step: function (d) { cycle('temperature', ['auto', 'C', 'F'], unit, d); renderPanels(); }},
       // miguel-custom: the Omarchy themes first, then the original looks.
-      {label: tr('Tema', 'Theme', 'Tema'), value: theme === 'tokyo-night' ? 'Tokyo Night' : theme === 'osaka-jade' ? 'Osaka Jade' : theme === 'light' ? tr('Claro', 'Light', 'Claro') : theme === 'dark' ? tr('Escuro', 'Dark', 'Oscuro') : auto,
-        step: function (d) { cycle('theme', ['tokyo-night', 'osaka-jade', 'auto', 'light', 'dark'], theme, d); checkNight(); }},
+      {label: tr('Tema', 'Theme', 'Tema'), value: omarchy(theme) ? omarchy(theme).name : theme === 'light' ? tr('Claro', 'Light', 'Claro') : theme === 'dark' ? tr('Escuro', 'Dark', 'Oscuro') : auto,
+        step: function (d) { cycle('theme', (window.OMARCHY || []).map(function (t) { return t.id; }).concat(['auto', 'light', 'dark']), theme, d); checkNight(); }},
       {label: tr('Widget do clima', 'Weather widget', 'Widget del clima'), toggle: Prefs.weather(),
         step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); }},
       {label: tr('Widget de cotações', 'Quotes widget', 'Widget de cotizaciones'), toggle: Prefs.quotes(),
@@ -772,11 +772,32 @@
 
   function checkNight() {
     setClass(body, 'night', Data.isNight(Date.now()));
-    // miguel-custom: Omarchy theme classes (home.css): body.omarchy.tokyo-night / body.omarchy.osaka-jade.
-    var theme = Prefs.theme();
-    setClass(body, 'omarchy', theme === 'tokyo-night' || theme === 'osaka-jade');
-    setClass(body, 'tokyo-night', theme === 'tokyo-night');
-    setClass(body, 'osaka-jade', theme === 'osaka-jade');
+    applyTheme(Prefs.theme());   // miguel-custom
+  }
+
+  // MARK: - Omarchy themes (miguel-custom): web/themes.js; the palette goes into home.css's variables on <body>.
+
+  function omarchy(id) {
+    var list = window.OMARCHY || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  var themeShown = null;
+
+  function applyTheme(id) {
+    if (id === themeShown) return;
+    themeShown = id;
+    var t = omarchy(id);
+    setClass(body, 'omarchy', !!t);
+    setClass(body, 'omarchy-light', !!t && t.mode === 'light');
+    if (!t) return;
+    for (var k in t.c) {
+      if (!t.c.hasOwnProperty(k)) continue;
+      var hex = t.c[k];
+      body.style.setProperty('--' + k, hex);
+      body.style.setProperty('--' + k + '-rgb', parseInt(hex.substr(1, 2), 16) + ', ' + parseInt(hex.substr(3, 2), 16) + ', ' + parseInt(hex.substr(5, 2), 16));
+    }
   }
 
   var saverOn = false, idleAt = Date.now(), saverIndex = 0, saverTimer = 0, SAVER_AFTER = 3 * 60000;   // miguel-custom: 3 idle minutes (was 5)
@@ -785,8 +806,7 @@
   function wallpapers() {
     var theme = Prefs.theme();
     var all = (window.WALLPAPERS || []).map(function (n) {
-      var t = /^osaka-jade/.test(n) ? 'osaka-jade' : /^tokyo-night/.test(n) ? 'tokyo-night' : '';
-      var title = t === 'osaka-jade' ? 'Osaka Jade' : t === 'tokyo-night' ? 'Tokyo Night' : '';
+      var t = n.split('--')[0], title = omarchy(t) ? omarchy(t).name : '';   // miguel-custom: "<theme>--<name>.jpg"
       // miguel-custom: Omarchy 4.5's default wallpaper, credited to its artist.
       if (/^tokyo-night--0-liftoff\./.test(n)) title += tr(' · Liftoff, de Tom Ballard', ' · Liftoff by Tom Ballard', ' · Liftoff, de Tom Ballard');
       return {url: 'wallpapers/' + n, theme: t, title: title};
@@ -840,7 +860,7 @@
 
   function showSaver() {
     var photos = Data.showcase().filter(function (p) { return p.backdrop && Data.appFor(p.app); });
-    // miguel-custom: Omarchy wallpapers (Tokyo Night, Osaka Jade) instead of the picks' backdrops, from a random one.
+    // miguel-custom: Omarchy wallpapers instead of the picks' backdrops, from a random one.
     var walls = wallpapers(), own = walls.filter(function (w) { return w.theme === Prefs.theme(); });
     if (own.length) walls = own;   // miguel-custom: with an Omarchy theme, only its wallpapers
     if (walls.length) {

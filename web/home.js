@@ -179,8 +179,12 @@
     for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.DRAWER && st.drawer === i);
     list = document.querySelectorAll('#apps .cell');
     for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.APPS && st.grid === i);
-    var rows = Math.max(1, Math.ceil(others.length / 5)), r = Math.floor(st.grid / 5), first = Math.max(0, Math.min(rows - 3, r - 1));
-    $('apps').lastChild.style.webkitTransform = $('apps').lastChild.style.transform = 'translateY(' + (-first * 239) + 'px)';
+    // miguel-custom: Omarchy themes list the apps (a launcher), 9 rows on screen; Classic keeps the 5-column grid.
+    var cols = appCols(), seen = cols === 1 ? 9 : 3, pitch = cols === 1 ? 78 : 239;
+    var rows = Math.max(1, Math.ceil(others.length / cols)), r = Math.floor(st.grid / cols), first = Math.max(0, Math.min(rows - seen, r - (cols === 1 ? 4 : 1)));
+    $('apps').lastChild.style.webkitTransform = $('apps').lastChild.style.transform = 'translateY(' + (-first * pitch) + 'px)';
+    list = document.querySelectorAll('#apps .cell');
+    for (i = 0; i < list.length; i++) setClass(list[i], 'out', cols === 1 && (i < first || i >= first + seen));
     focusRows($('settings'), st.row, st.zone === Z.SETTINGS);
     focusRows($('shelfedit'), st.edit, st.zone === Z.EDIT);
     list = document.querySelectorAll('#themes .tcard');   // miguel-custom
@@ -491,11 +495,27 @@
 
   // MARK: - All Apps
 
+  /** miguel-custom: 1 (a launcher list) with an Omarchy theme, 5 (the grid) with a Classic one. */
+  function appCols() { return hasClass(body, 'omarchy') ? 1 : 5; }
+
   function renderApps() {
     var sheet = $('apps');
     sheet.firstChild.textContent = tr('Todos os Apps', 'All Apps', 'Todas las apps');
     var grid = sheet.lastChild;
     grid.innerHTML = '';
+    if (appCols() === 1) {   // miguel-custom: a row per app: its small face, its name
+      setClass(sheet, 'list', true);
+      for (var j = 0; j < others.length; j++) {
+        var row = el('div', 'cell', grid);
+        row.style.left = '546px';
+        row.style.top = (262 + j * 78) + 'px';
+        face(others[j], el('div', 'face', row), wordFit(others[j].title, 96, 16));
+        el('div', 'label', row, others[j].title);
+        hover(row, Z.APPS, j);
+      }
+      return;
+    }
+    setClass(sheet, 'list', false);
     for (var i = 0; i < others.length; i++) {
       var r = Math.floor(i / 5), c = i % 5, cell = el('div', 'cell', grid);
       cell.style.left = (130 + c * 340) + 'px';
@@ -755,8 +775,8 @@
         else if (dy < 0) closeGallery();
         return;
       case Z.APPS:
-        var g = st.grid + dx + dy * 5;
-        if (g >= 0 && g < others.length && (dx === 0 || Math.floor(g / 5) === Math.floor(st.grid / 5))) st.grid = g;
+        var ac = appCols(), g = st.grid + dx + dy * ac;   // miguel-custom: appCols() (was 5)
+        if (g >= 0 && g < others.length && (dx === 0 || Math.floor(g / ac) === Math.floor(st.grid / ac))) st.grid = g;
         break;
       case Z.SETTINGS:
         if (dy) st.row = Math.max(0, Math.min(rowsNow.length - 1, st.row + dy));

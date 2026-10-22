@@ -120,7 +120,8 @@ var TV = (function () {
   var SAMSUNG_TITLES = {
     'NvZ26VG9Yw.HBOGOLAG': 'Max',
     'rJeHak5zRg.Spotify': 'Spotify',
-    'evKhCgZelL.AmazonIgnitionLauncher2': 'Prime Video'
+    'evKhCgZelL.AmazonIgnitionLauncher2': 'Prime Video',
+    'p9WC6wWKA1.SmartOne': 'IPTV'   // miguel-custom: SmartOne IPTV Player, shown as "IPTV" on the dock
   };
 
   // Samsung's settings menu on Tizen 3, which answers no "settings" app control.

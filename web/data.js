@@ -208,7 +208,8 @@ var Data = (function () {
 
   // MARK: - Picks (TMDB)
 
-  var KEY = (CONFIG.tmdbKey || '').trim();
+  // miguel-custom: the home shows no picks, so TMDB is never called (the key stays in config.properties, unused).
+  var KEY = '';
   var REGION = Place.country;
   var API = 'https://api.themoviedb.org/3';
 

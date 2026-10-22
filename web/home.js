@@ -216,13 +216,8 @@
 
   function renderTop() {
     $('title').textContent = tr('Olá Miguel', 'For You', 'Para ti');   // miguel-custom: greeting instead of "Para você"
-    var tabs = $('tabs');
-    tabs.innerHTML = '';
-    var names = [tr('Explorar', 'Explore', 'Explorar'), tr('Filmes', 'Movies', 'Películas'), tr('Séries', 'Shows', 'Series')];
-    for (var i = 0; i < 3; i++) {
-      var t = el('button', 'tab', tabs, names[i]);
-      hover(t, Z.TOP, i);
-    }
+    // miguel-custom: no Explorar / Filmes / Séries tabs (nor their picks): the top row is only the round buttons (3-5).
+    $('tabs').innerHTML = '';
     var buttons = $('buttons');
     buttons.innerHTML = '';
     var defs = [['live_tv', tr('TV aberta', 'Live TV', 'TV en vivo')], ['hdmi', tr('Entradas HDMI', 'HDMI Inputs', 'Entradas HDMI')],
@@ -249,7 +244,7 @@
   // MARK: - Picks and background
 
   function renderCards() {
-    var list = Data.picks(TAB_KIND[st.tab]);
+    var list = [];   // miguel-custom: no picks on the home; the big clock and date (.no-picks) take their place
     var holder = $('cards');
     setClass(body, 'no-picks', !list.length);
     var same = list.length === cards.length;
@@ -687,7 +682,7 @@
         else if (dy > 0) { openDrawer(); return; }
         else if (dy < 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = nearest(cardNodes, centerX(tiles[st.shelf])); }
-          else { st.zone = Z.TOP; st.top = st.tab; }
+          else { st.zone = Z.TOP; st.top = 3; }   // miguel-custom: the first round button (no tabs)
         }
         break;
       case Z.CARDS:
@@ -697,7 +692,7 @@
         break;
       case Z.TOP:
         if (dx) {
-          st.top = Math.max(0, Math.min(5, st.top + dx));
+          st.top = Math.max(3, Math.min(5, st.top + dx));   // miguel-custom: 3 (no tabs), was 0
           if (st.top < 3) selectTab(st.top);   // as on Apple TV: focusing a tab selects it
         } else if (dy > 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = Math.min(cards.length - 1, st.top < 3 ? 0 : cards.length - 1); }

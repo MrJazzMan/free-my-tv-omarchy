@@ -278,6 +278,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 #clock .date { display: block; font-size: 40px; font-weight: 500; letter-spacing: 0; margin-top: 18px; color: #6E6E73; }
 .no-picks #clock { display: block; }
+/* miguel-custom: no tabs or picks: the clock sits in the middle of the space between the title and the dock. */
+.no-picks #clock { top: 340px; }
 .night #clock { color: #F5F5F7; }
 .night #clock .date { color: rgba(245, 245, 247, 0.62); }
 

@@ -5,3 +5,8 @@ https://github.com/omacom/omarchy (formerly basecamp/omarchy), branch "quattro",
 Resized and center-cropped to 1920x1080 JPEG (quality 82). The Omarchy repository is MIT licensed
 (Copyright (c) David Heinemeier Hansson); the images carry no separate per-file license or artist credit there,
 so their original authors' rights may still apply. Kept for personal use on this TV.
+
+tokyo-night--0-liftoff.jpg: "Liftoff" by Tom Ballard (@tcballard, github.com/tcballard), added to Omarchy's Tokyo Night
+in omacom/omarchy PR #14755 (as 7-liftoff.webp) and moved to the front as 0-liftoff.webp by DHH in commit 097c733
+("Lead Tokyo Night's backgrounds with Liftoff", 2026-10-13): the Omarchy 4.5 default wallpaper. Credited in the
+screensaver and gallery captions. Original 8192x4608, here 1920x1080.

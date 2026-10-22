@@ -786,7 +786,10 @@
     var theme = Prefs.theme();
     var all = (window.WALLPAPERS || []).map(function (n) {
       var t = /^osaka-jade/.test(n) ? 'osaka-jade' : /^tokyo-night/.test(n) ? 'tokyo-night' : '';
-      return {url: 'wallpapers/' + n, theme: t, title: t === 'osaka-jade' ? 'Osaka Jade' : t === 'tokyo-night' ? 'Tokyo Night' : ''};
+      var title = t === 'osaka-jade' ? 'Osaka Jade' : t === 'tokyo-night' ? 'Tokyo Night' : '';
+      // miguel-custom: Omarchy 4.5's default wallpaper, credited to its artist.
+      if (/^tokyo-night--0-liftoff\./.test(n)) title += tr(' · Liftoff, de Tom Ballard', ' · Liftoff by Tom Ballard', ' · Liftoff, de Tom Ballard');
+      return {url: 'wallpapers/' + n, theme: t, title: title};
     });
     return all.filter(function (w) { return w.theme === theme; }).concat(all.filter(function (w) { return w.theme !== theme; }));
   }

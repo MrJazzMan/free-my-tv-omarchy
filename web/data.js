@@ -45,7 +45,7 @@ var Prefs = (function () {
     version: 0,
     language: function () { return pick('language', CONFIG.language || 'auto'); },
     temperature: function () { return pick('temperature', CONFIG.temperature || 'auto'); },
-    theme: function () { return pick('theme', 'auto'); },
+    theme: function () { return pick('theme', 'tokyo-night'); },   // miguel-custom: Omarchy Tokyo Night by default (was 'auto')
     weather: function () { return pick('weather', true); },
     quotes: function () { return pick('quotes', CONFIG.showCrypto !== false); },
     coin: function (i) { var c = pick('coins', null); return c ? c[i] !== false : true; },
@@ -523,7 +523,7 @@ var Data = (function () {
     /** Night at the location: from sunset to sunrise (the last forecast; without one, 6:00 and 18:00). */
     isNight: function (at) {
       var theme = Prefs.theme();
-      if (theme === 'dark') return true;
+      if (theme === 'dark' || theme === 'tokyo-night' || theme === 'osaka-jade') return true;   // miguel-custom: Omarchy themes are dark
       if (theme === 'light') return false;
       var d = new Date(at), mins = d.getHours() * 60 + d.getMinutes();
       function hm(t, fallback) { if (!t) return fallback; var x = new Date(t); return x.getHours() * 60 + x.getMinutes(); }

@@ -538,3 +538,81 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #gallery .caption .count { margin-top: 8px; font-size: 28px; font-weight: 500; color: rgba(255, 255, 255, 0.75); font-feature-settings: 'tnum'; }
 #gallery .hint { position: absolute; left: 50%; top: 64px; -webkit-transform: translateX(-50%); transform: translateX(-50%); padding: 16px 30px; border-radius: 32px; font-size: 26px; font-weight: 500; color: rgba(255, 255, 255, 0.95); background: rgba(17, 17, 19, 0.7); white-space: nowrap; -webkit-transition: opacity 0.8s; transition: opacity 0.8s; }
 #gallery .hint.quiet { opacity: 0; }
+
+/* MARK: - miguel-custom: Omarchy themes (Ajustes do Início, Tema). Exact colors.toml palettes from
+   github.com/omacom/omarchy (tokyo-night: accent ring; osaka-jade: its accent is too dark for a ring seen from the
+   sofa, so the ring is its bright cyan). Every focus keeps a 5px ring plus the usual grow. */
+/* tokyo-night */
+body.omarchy.tokyo-night #sky { background: #0e0e14; }
+body.omarchy.tokyo-night #sky .night { background: -webkit-linear-gradient(top, #1a1b26, #0e0e14); background: linear-gradient(#1a1b26, #0e0e14); }
+body.omarchy.tokyo-night #sky .veil { background: rgba(14, 14, 20, 0.78); }
+body.omarchy.tokyo-night #sky .lift { background: #0e0e14; }
+body.omarchy.tokyo-night #title, body.omarchy.tokyo-night #clock { color: #c0caf5; }
+body.omarchy.tokyo-night #clock .date, body.omarchy.tokyo-night #quotes { color: #a9b1d6; }
+body.omarchy.tokyo-night #quotes svg { fill: #565f89; }
+body.omarchy.tokyo-night .round { background: -webkit-linear-gradient(top, rgba(36, 40, 59, 0.85), rgba(19, 20, 28, 0.7)); background: linear-gradient(rgba(36, 40, 59, 0.85), rgba(19, 20, 28, 0.7)); box-shadow: 0 6px 26px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(65, 72, 104, 0.6); color: #c0caf5; }
+body.omarchy.tokyo-night .round.focus { background: #c0caf5; color: #1a1b26; box-shadow: 0 0 0 5px #7aa2f7, 0 14px 30px rgba(0, 0, 0, 0.5); }
+body.omarchy.tokyo-night .round.focus .tip { color: #c0caf5; }
+body.omarchy.tokyo-night #platter { background: -webkit-linear-gradient(top, rgba(36, 40, 59, 0.72), rgba(19, 20, 28, 0.62)); background: linear-gradient(rgba(36, 40, 59, 0.72), rgba(19, 20, 28, 0.62)); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(65, 72, 104, 0.55); }
+body.omarchy.tokyo-night .tile.focus { box-shadow: 0 0 0 5px #7aa2f7, 0 18px 40px rgba(0, 0, 0, 0.6); }
+body.omarchy.tokyo-night .row-title { color: #a9b1d6; }
+body.omarchy.tokyo-night .glass { background: -webkit-linear-gradient(top, rgba(36, 40, 59, 0.8), rgba(19, 20, 28, 0.68)); background: linear-gradient(rgba(36, 40, 59, 0.8), rgba(19, 20, 28, 0.68)); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(65, 72, 104, 0.5); }
+body.omarchy.tokyo-night .key { color: #c0caf5; }
+body.omarchy.tokyo-night .key.off { color: #565f89; }
+body.omarchy.tokyo-night .key.focus { background: #c0caf5; color: #1a1b26; box-shadow: 0 0 0 5px #7aa2f7, 0 16px 34px rgba(0, 0, 0, 0.5); }
+body.omarchy.tokyo-night .panel { color: #c0caf5; }
+body.omarchy.tokyo-night .panel .head, body.omarchy.tokyo-night .panel .side, body.omarchy.tokyo-night #weather .range, body.omarchy.tokyo-night #weather .hour .t, body.omarchy.tokyo-night #weather .sun { color: #a9b1d6; }
+body.omarchy.tokyo-night #weather .split { background: rgba(65, 72, 104, 0.6); }
+body.omarchy.tokyo-night #prices .coin svg { fill: #a9b1d6; }
+body.omarchy.tokyo-night #prices .up { color: #9ece6a; background: rgba(158, 206, 106, 0.18); }
+body.omarchy.tokyo-night #prices .down { color: #f7768e; background: rgba(247, 118, 142, 0.18); }
+body.omarchy.tokyo-night .sheet { background: rgba(14, 14, 20, 0.8); color: #c0caf5; }
+body.omarchy.tokyo-night #settings .box, body.omarchy.tokyo-night #shelfedit .box { background: -webkit-linear-gradient(top, #24283b, #1a1b26); background: linear-gradient(#24283b, #1a1b26); box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(65, 72, 104, 0.7); }
+body.omarchy.tokyo-night .box .title .sym { color: #7aa2f7; }
+body.omarchy.tokyo-night .box .row.focus { background: #292e42; box-shadow: inset 0 0 0 4px #7aa2f7; }
+body.omarchy.tokyo-night .box .row .value { color: #c0caf5; }
+body.omarchy.tokyo-night .box .row .value .chev, body.omarchy.tokyo-night .box .hint, body.omarchy.tokyo-night .box .row.dim { color: #565f89; }
+body.omarchy.tokyo-night .toggle { background: #414868; }
+body.omarchy.tokyo-night .toggle.on { background: #7aa2f7; }
+body.omarchy.tokyo-night .cell .label { color: #a9b1d6; }
+body.omarchy.tokyo-night .cell.focus .face { box-shadow: 0 0 0 5px #7aa2f7, 0 16px 34px rgba(0, 0, 0, 0.55); }
+body.omarchy.tokyo-night .cell.focus .label { color: #c0caf5; }
+body.omarchy.tokyo-night #toast { background: rgba(19, 20, 28, 0.94); color: #c0caf5; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(65, 72, 104, 0.7); }
+body.omarchy.tokyo-night #gallery .hint { background: rgba(19, 20, 28, 0.8); color: #c0caf5; }
+/* osaka-jade */
+body.omarchy.osaka-jade #sky { background: #090f0d; }
+body.omarchy.osaka-jade #sky .night { background: -webkit-linear-gradient(top, #111c18, #090f0d); background: linear-gradient(#111c18, #090f0d); }
+body.omarchy.osaka-jade #sky .veil { background: rgba(9, 15, 13, 0.78); }
+body.omarchy.osaka-jade #sky .lift { background: #090f0d; }
+body.omarchy.osaka-jade #title, body.omarchy.osaka-jade #clock { color: #F7E8B2; }
+body.omarchy.osaka-jade #clock .date, body.omarchy.osaka-jade #quotes { color: #C1C497; }
+body.omarchy.osaka-jade #quotes svg { fill: #81B8A8; }
+body.omarchy.osaka-jade .round { background: -webkit-linear-gradient(top, rgba(35, 55, 43, 0.85), rgba(12, 21, 18, 0.7)); background: linear-gradient(rgba(35, 55, 43, 0.85), rgba(12, 21, 18, 0.7)); box-shadow: 0 6px 26px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(83, 104, 91, 0.6); color: #F7E8B2; }
+body.omarchy.osaka-jade .round.focus { background: #F7E8B2; color: #111c18; box-shadow: 0 0 0 5px #2DD5B7, 0 14px 30px rgba(0, 0, 0, 0.5); }
+body.omarchy.osaka-jade .round.focus .tip { color: #F7E8B2; }
+body.omarchy.osaka-jade #platter { background: -webkit-linear-gradient(top, rgba(35, 55, 43, 0.72), rgba(12, 21, 18, 0.62)); background: linear-gradient(rgba(35, 55, 43, 0.72), rgba(12, 21, 18, 0.62)); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(83, 104, 91, 0.55); }
+body.omarchy.osaka-jade .tile.focus { box-shadow: 0 0 0 5px #2DD5B7, 0 18px 40px rgba(0, 0, 0, 0.6); }
+body.omarchy.osaka-jade .row-title { color: #C1C497; }
+body.omarchy.osaka-jade .glass { background: -webkit-linear-gradient(top, rgba(35, 55, 43, 0.8), rgba(12, 21, 18, 0.68)); background: linear-gradient(rgba(35, 55, 43, 0.8), rgba(12, 21, 18, 0.68)); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(83, 104, 91, 0.5); }
+body.omarchy.osaka-jade .key { color: #F7E8B2; }
+body.omarchy.osaka-jade .key.off { color: #81B8A8; }
+body.omarchy.osaka-jade .key.focus { background: #F7E8B2; color: #111c18; box-shadow: 0 0 0 5px #2DD5B7, 0 16px 34px rgba(0, 0, 0, 0.5); }
+body.omarchy.osaka-jade .panel { color: #F7E8B2; }
+body.omarchy.osaka-jade .panel .head, body.omarchy.osaka-jade .panel .side, body.omarchy.osaka-jade #weather .range, body.omarchy.osaka-jade #weather .hour .t, body.omarchy.osaka-jade #weather .sun { color: #C1C497; }
+body.omarchy.osaka-jade #weather .split { background: rgba(83, 104, 91, 0.6); }
+body.omarchy.osaka-jade #prices .coin svg { fill: #C1C497; }
+body.omarchy.osaka-jade #prices .up { color: #549e6a; background: rgba(84, 158, 106, 0.18); }
+body.omarchy.osaka-jade #prices .down { color: #FF5345; background: rgba(255, 83, 69, 0.18); }
+body.omarchy.osaka-jade .sheet { background: rgba(9, 15, 13, 0.8); color: #F7E8B2; }
+body.omarchy.osaka-jade #settings .box, body.omarchy.osaka-jade #shelfedit .box { background: -webkit-linear-gradient(top, #23372B, #111c18); background: linear-gradient(#23372B, #111c18); box-shadow: 0 40px 90px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(83, 104, 91, 0.7); }
+body.omarchy.osaka-jade .box .title .sym { color: #509475; }
+body.omarchy.osaka-jade .box .row.focus { background: #32473B; box-shadow: inset 0 0 0 4px #2DD5B7; }
+body.omarchy.osaka-jade .box .row .value { color: #F7E8B2; }
+body.omarchy.osaka-jade .box .row .value .chev, body.omarchy.osaka-jade .box .hint, body.omarchy.osaka-jade .box .row.dim { color: #81B8A8; }
+body.omarchy.osaka-jade .toggle { background: #53685B; }
+body.omarchy.osaka-jade .toggle.on { background: #509475; }
+body.omarchy.osaka-jade .cell .label { color: #C1C497; }
+body.omarchy.osaka-jade .cell.focus .face { box-shadow: 0 0 0 5px #2DD5B7, 0 16px 34px rgba(0, 0, 0, 0.55); }
+body.omarchy.osaka-jade .cell.focus .label { color: #F7E8B2; }
+body.omarchy.osaka-jade #toast { background: rgba(12, 21, 18, 0.94); color: #F7E8B2; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(83, 104, 91, 0.7); }
+body.omarchy.osaka-jade #gallery .hint { background: rgba(12, 21, 18, 0.8); color: #F7E8B2; }

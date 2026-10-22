@@ -492,8 +492,9 @@
         step: function (d) { cycle('language', ['auto', 'de', 'en', 'es', 'pt', 'ru'], lang, d); I18N.set(Prefs.language()); renderAll(); }},
       {label: tr('Temperatura', 'Temperature', 'Temperatura'), value: unit === 'C' ? '°C' : unit === 'F' ? '°F' : auto,
         step: function (d) { cycle('temperature', ['auto', 'C', 'F'], unit, d); renderPanels(); }},
-      {label: tr('Tema', 'Theme', 'Tema'), value: theme === 'light' ? tr('Claro', 'Light', 'Claro') : theme === 'dark' ? tr('Escuro', 'Dark', 'Oscuro') : auto,
-        step: function (d) { cycle('theme', ['auto', 'light', 'dark'], theme, d); checkNight(); }},
+      // miguel-custom: the Omarchy themes first, then the original looks.
+      {label: tr('Tema', 'Theme', 'Tema'), value: theme === 'tokyo-night' ? 'Tokyo Night' : theme === 'osaka-jade' ? 'Osaka Jade' : theme === 'light' ? tr('Claro', 'Light', 'Claro') : theme === 'dark' ? tr('Escuro', 'Dark', 'Oscuro') : auto,
+        step: function (d) { cycle('theme', ['tokyo-night', 'osaka-jade', 'auto', 'light', 'dark'], theme, d); checkNight(); }},
       {label: tr('Widget do clima', 'Weather widget', 'Widget del clima'), toggle: Prefs.weather(),
         step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); }},
       {label: tr('Widget de cotações', 'Quotes widget', 'Widget de cotizaciones'), toggle: Prefs.quotes(),
@@ -771,15 +772,23 @@
 
   function checkNight() {
     setClass(body, 'night', Data.isNight(Date.now()));
+    // miguel-custom: Omarchy theme classes (home.css): body.omarchy.tokyo-night / body.omarchy.osaka-jade.
+    var theme = Prefs.theme();
+    setClass(body, 'omarchy', theme === 'tokyo-night' || theme === 'osaka-jade');
+    setClass(body, 'tokyo-night', theme === 'tokyo-night');
+    setClass(body, 'osaka-jade', theme === 'osaka-jade');
   }
 
   var saverOn = false, idleAt = Date.now(), saverIndex = 0, saverTimer = 0, SAVER_AFTER = 3 * 60000;   // miguel-custom: 3 idle minutes (was 5)
 
-  // miguel-custom: the bundled Omarchy wallpapers as {url, title}.
+  // miguel-custom: the bundled Omarchy wallpapers as {url, title, theme}, the active theme's first.
   function wallpapers() {
-    return (window.WALLPAPERS || []).map(function (n) {
-      return {url: 'wallpapers/' + n, title: /^osaka-jade/.test(n) ? 'Osaka Jade' : /^tokyo-night/.test(n) ? 'Tokyo Night' : ''};
+    var theme = Prefs.theme();
+    var all = (window.WALLPAPERS || []).map(function (n) {
+      var t = /^osaka-jade/.test(n) ? 'osaka-jade' : /^tokyo-night/.test(n) ? 'tokyo-night' : '';
+      return {url: 'wallpapers/' + n, theme: t, title: t === 'osaka-jade' ? 'Osaka Jade' : t === 'tokyo-night' ? 'Tokyo Night' : ''};
     });
+    return all.filter(function (w) { return w.theme === theme; }).concat(all.filter(function (w) { return w.theme !== theme; }));
   }
 
   // MARK: - Wallpaper gallery (miguel-custom): ↓ from the drawer's row, full screen; ← → browse, ↑ or Back return.
@@ -829,7 +838,8 @@
   function showSaver() {
     var photos = Data.showcase().filter(function (p) { return p.backdrop && Data.appFor(p.app); });
     // miguel-custom: Omarchy wallpapers (Tokyo Night, Osaka Jade) instead of the picks' backdrops, from a random one.
-    var walls = wallpapers();
+    var walls = wallpapers(), own = walls.filter(function (w) { return w.theme === Prefs.theme(); });
+    if (own.length) walls = own;   // miguel-custom: with an Omarchy theme, only its wallpapers
     if (walls.length) {
       photos = walls;
       saverIndex = Math.floor(Math.random() * photos.length);

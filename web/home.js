@@ -186,6 +186,7 @@
     list = document.querySelectorAll('#themes .tcard');   // miguel-custom
     for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.THEMES && st.theme === i);
     setClass(body, 'drawer-open', st.zone === Z.DRAWER || st.zone === Z.GALLERY);   // miguel-custom: the gallery opens over the drawer
+    renderWorkspaces();   // miguel-custom
   }
 
   function focusRows(sheet, index, on) {
@@ -296,7 +297,43 @@
     img.src = url;
   }
 
+  // MARK: - Top bar (miguel-custom): with an Omarchy theme, a Waybar-like bar: the Omarchy glyph and "workspaces"
+  // (1 home, 2 inputs, 3 gallery, 4 apps, 5 settings: the one on screen lit) on the left, the clock in the middle,
+  // weather, network and the crypto quotes on the right, then the round buttons as bar icons.
+
+  var WS = [[Z.SHELF, Z.TOP, Z.CARDS], [Z.DRAWER], [Z.GALLERY], [Z.APPS], [Z.SETTINGS, Z.EDIT, Z.THEMES]];
+
+  function setText(node, s) { if (node.textContent !== s) node.textContent = s; }
+
+  function renderWorkspaces() {
+    var ws = $('ws'), cur = 0, i;
+    for (i = 0; i < WS.length; i++) if (WS[i].indexOf(st.zone) >= 0) cur = i;
+    if (ws.children.length !== WS.length) { ws.innerHTML = ''; for (i = 0; i < WS.length; i++) el('span', 'w', ws, String(i + 1)); }
+    for (i = 0; i < WS.length; i++) setClass(ws.children[i], 'on', i === cur);
+    var names = [tr('início', 'home', 'inicio'), tr('entradas', 'inputs', 'entradas'), tr('galeria', 'gallery', 'galería'),
+      tr('apps', 'apps', 'apps'), st.zone === Z.THEMES ? tr('temas', 'themes', 'temas') : tr('ajustes', 'settings', 'ajustes')];
+    setText($('wsname'), names[cur]);
+  }
+
+  function renderBar() {
+    renderWorkspaces();
+    var d = new Date(), day = '';
+    try { day = d.toLocaleDateString(I18N.locale(), {weekday: 'short'}).replace(/\.$/, ''); } catch (e) {}
+    setText($('barclock'), (day ? day + ' ' : '') + Data.time(d.getTime()));
+    var wx = $('barwx'), w = Prefs.weather() ? Data.weather : null, key = w ? Data.symbol(w.code, w.isDay) + Data.degrees(w.temp) : '';
+    if (wx.getAttribute('data-k') !== key) {
+      wx.setAttribute('data-k', key);
+      wx.innerHTML = '';
+      if (w) { sym(Data.symbol(w.code, w.isDay), wx); el('span', '', wx, Data.degrees(w.temp)); }
+    }
+    var net = $('barnet'), on = navigator.onLine === false ? 'wifi_off' : 'wifi';
+    if (net.getAttribute('data-k') !== on) { net.setAttribute('data-k', on); net.innerHTML = ''; sym(on, net); }
+  }
+  window.addEventListener('online', renderBar);
+  window.addEventListener('offline', renderBar);
+
   function renderClock() {
+    renderBar();   // miguel-custom
     var d = new Date(), c = $('clock');
     c.firstChild.textContent = Data.time(d.getTime());
     try {
@@ -1093,6 +1130,7 @@
   }
 
   Data.onChange(function () {
+    renderBar();   // miguel-custom: the weather
     renderQuotes();
     renderCards();
     renderPanels();

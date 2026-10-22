@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=1920, height=1080">
 <title>Free My TV</title>
 <link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="omarchy.css"><!-- miguel-custom: the Omarchy look -->
 </head>
 <body>
 <div id="stage">
@@ -21,8 +22,6 @@
     <div id="top" class="layer">
       <h1 id="title"></h1>
       <div id="tabs"></div>
-      <div id="quotes"></div>
-      <div id="buttons"></div>
       <div id="cards"></div>
       <div id="clock"><span class="time"></span><span class="date"></span></div>
     </div>
@@ -30,6 +29,14 @@
     <div id="tiles"></div>
   </div>
   <div id="drawer" class="layer"></div>
+  <!-- miguel-custom: the top bar (Omarchy themes: a Waybar-like bar; Classic: only the round buttons and the quotes) -->
+  <div id="bar">
+    <div class="left"><span class="logo">&#xE900;</span><span id="ws"></span><span id="wsname"></span></div>
+    <div id="barclock"></div>
+    <div class="right"><span id="barwx"></span><span id="barnet"></span></div>
+    <div id="quotes"></div>
+    <div id="buttons"></div>
+  </div>
   <div id="apps" class="layer sheet"><h2></h2><div class="grid"></div></div>
   <div id="settings" class="layer sheet"><div class="box"></div></div>
   <div id="shelfedit" class="layer sheet"><div class="box"></div></div>

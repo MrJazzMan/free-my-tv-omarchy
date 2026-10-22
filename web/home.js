@@ -155,7 +155,7 @@
 
   // MARK: - Focus
 
-  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit'};
+  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery'};   // miguel-custom: GALLERY
   var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0};
   var cards = [];
 
@@ -183,7 +183,7 @@
     $('apps').lastChild.style.webkitTransform = $('apps').lastChild.style.transform = 'translateY(' + (-first * 239) + 'px)';
     focusRows($('settings'), st.row, st.zone === Z.SETTINGS);
     focusRows($('shelfedit'), st.edit, st.zone === Z.EDIT);
-    setClass(body, 'drawer-open', st.zone === Z.DRAWER);
+    setClass(body, 'drawer-open', st.zone === Z.DRAWER || st.zone === Z.GALLERY);   // miguel-custom: the gallery opens over the drawer
   }
 
   function focusRows(sheet, index, on) {
@@ -702,7 +702,12 @@
       case Z.DRAWER:
         if (dx) st.drawer = Math.max(0, Math.min(drawerItems.length - 1, st.drawer + dx));
         else if (dy < 0) { closeDrawer(); return; }
+        else if (dy > 0) { openGallery(); return; }   // miguel-custom: ↓ again: the wallpaper gallery
         break;
+      case Z.GALLERY:   // miguel-custom: ← → browse, ↑ returns to the drawer
+        if (dx) showWall(dx);
+        else if (dy < 0) closeGallery();
+        return;
       case Z.APPS:
         var g = st.grid + dx + dy * 5;
         if (g >= 0 && g < others.length && (dx === 0 || Math.floor(g / 5) === Math.floor(st.grid / 5))) st.grid = g;
@@ -723,6 +728,7 @@
   }
 
   function back() {
+    if (st.zone === Z.GALLERY) { closeGallery(); return; }   // miguel-custom
     if (st.zone === Z.EDIT) { setClass($('shelfedit'), 'open', false); openSettings(); st.row = rowsNow.length - 2; updateFocus(); return; }
     if (sheetOpen()) { closeSheets(); return; }
     if (st.zone === Z.DRAWER) { closeDrawer(); return; }
@@ -733,7 +739,7 @@
   /** The pointer focuses what it's over (the Magic Remote, or a mouse when previewing). */
   function hover(node, zone, index) {
     node.onmouseover = function () {
-      if (saverOn || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT))) return;
+      if (saverOn || st.zone === Z.GALLERY || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT))) return;   // miguel-custom: not under the gallery
       if (zone === Z.DRAWER && st.zone !== Z.DRAWER) return;
       if (zone !== Z.DRAWER && st.zone === Z.DRAWER && zone !== Z.SHELF) return;
       if (zone === Z.SHELF && st.zone === Z.DRAWER) closeDrawer();
@@ -769,14 +775,63 @@
 
   var saverOn = false, idleAt = Date.now(), saverIndex = 0, saverTimer = 0, SAVER_AFTER = 3 * 60000;   // miguel-custom: 3 idle minutes (was 5)
 
+  // miguel-custom: the bundled Omarchy wallpapers as {url, title}.
+  function wallpapers() {
+    return (window.WALLPAPERS || []).map(function (n) {
+      return {url: 'wallpapers/' + n, title: /^osaka-jade/.test(n) ? 'Osaka Jade' : /^tokyo-night/.test(n) ? 'Tokyo Night' : ''};
+    });
+  }
+
+  // MARK: - Wallpaper gallery (miguel-custom): ↓ from the drawer's row, full screen; ← → browse, ↑ or Back return.
+
+  var galleryList = [], galleryIndex = 0, galleryFront = 0, galleryHint = 0;
+
+  function openGallery() {
+    galleryList = wallpapers();
+    if (!galleryList.length) return;
+    st.zone = Z.GALLERY;
+    galleryIndex = 0;
+    var g = $('gallery');
+    g.innerHTML = '';
+    el('div', 'photo', g);
+    el('div', 'photo', g);
+    el('div', 'shade', g);
+    var cap = el('div', 'caption', g);
+    el('div', 'name', cap);
+    el('div', 'count', cap);
+    var hint = el('div', 'hint', g, tr('‹ › para ver mais  ·  ↑ ou Voltar para sair', '‹ › to browse  ·  ↑ or Back to return', '‹ › para ver más  ·  ↑ o Atrás para volver'));
+    clearTimeout(galleryHint);
+    galleryHint = setTimeout(function () { setClass(hint, 'quiet', true); }, 5000);
+    showWall(0);
+    setClass(g, 'on', true);
+    updateFocus();
+  }
+
+  function showWall(d) {
+    var n = galleryList.length, g = $('gallery'), photos = g.querySelectorAll('.photo');
+    galleryIndex = (galleryIndex + d + n) % n;
+    var p = galleryList[galleryIndex];
+    galleryFront = 1 - galleryFront;
+    photos[galleryFront].style.backgroundImage = 'url(' + p.url + ')';
+    setClass(photos[galleryFront], 'on', true);
+    setClass(photos[1 - galleryFront], 'on', false);
+    g.querySelector('.caption .name').textContent = p.title;
+    g.querySelector('.caption .count').textContent = (galleryIndex + 1) + ' / ' + n;
+    new Image().src = galleryList[(galleryIndex + 1) % n].url;   // the next one is ready when → is pressed
+  }
+
+  function closeGallery() {
+    setClass($('gallery'), 'on', false);
+    st.zone = Z.DRAWER;
+    updateFocus();
+  }
+
   function showSaver() {
     var photos = Data.showcase().filter(function (p) { return p.backdrop && Data.appFor(p.app); });
     // miguel-custom: Omarchy wallpapers (Tokyo Night, Osaka Jade) instead of the picks' backdrops, from a random one.
-    var walls = window.WALLPAPERS || [];
+    var walls = wallpapers();
     if (walls.length) {
-      photos = walls.map(function (n) {
-        return {url: 'wallpapers/' + n, title: /^osaka-jade/.test(n) ? 'Osaka Jade' : /^tokyo-night/.test(n) ? 'Tokyo Night' : ''};
-      });
+      photos = walls;
       saverIndex = Math.floor(Math.random() * photos.length);
     }
     saverOn = true;
@@ -881,6 +936,7 @@
   function reset() {
     hideSaver();
     closeSheets();
+    setClass($('gallery'), 'on', false);   // miguel-custom
     st.zone = Z.SHELF;
     st.shelf = 0;
     if (st.tab !== 0) { st.tab = 0; renderCards(); }
@@ -921,7 +977,7 @@
     renderClock();
     checkNight();
     Data.refresh();
-    if (!saverOn && !sheetOpen() && Date.now() - idleAt > SAVER_AFTER) showSaver();
+    if (!saverOn && !sheetOpen() && st.zone !== Z.GALLERY && Date.now() - idleAt > SAVER_AFTER) showSaver();   // miguel-custom: not in the gallery
     if (saverOn) tickSaverClock($('saver').querySelector('.clock'));
   }, 30000);
 

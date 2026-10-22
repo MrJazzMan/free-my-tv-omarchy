@@ -526,3 +526,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* The Magic Remote's pointer: no text selection, no outlines. */
 * { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+/* MARK: - miguel-custom: wallpaper gallery, full screen over the drawer (↓ twice from the dock). */
+#gallery { z-index: 3; background: #000; opacity: 0; visibility: hidden; -webkit-transition: opacity 0.5s, visibility 0s 0.5s; transition: opacity 0.5s, visibility 0s 0.5s; }
+#gallery.on { opacity: 1; visibility: visible; -webkit-transition-delay: 0s; transition-delay: 0s; }
+#gallery .photo { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background-size: cover; background-position: center; opacity: 0; -webkit-transition: opacity 0.6s; transition: opacity 0.6s; }
+#gallery .photo.on { opacity: 1; }
+#gallery .shade { position: absolute; left: 0; right: 0; bottom: 0; height: 360px; background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)); background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)); }
+#gallery .caption { position: absolute; left: 96px; bottom: 84px; color: #fff; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5); }
+#gallery .caption .name { font-size: 46px; font-weight: 600; }
+#gallery .caption .count { margin-top: 8px; font-size: 28px; font-weight: 500; color: rgba(255, 255, 255, 0.75); font-feature-settings: 'tnum'; }
+#gallery .hint { position: absolute; left: 50%; top: 64px; -webkit-transform: translateX(-50%); transform: translateX(-50%); padding: 16px 30px; border-radius: 32px; font-size: 26px; font-weight: 500; color: rgba(255, 255, 255, 0.95); background: rgba(17, 17, 19, 0.7); white-space: nowrap; -webkit-transition: opacity 0.8s; transition: opacity 0.8s; }
+#gallery .hint.quiet { opacity: 0; }

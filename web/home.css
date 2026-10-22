@@ -578,3 +578,28 @@ body.omarchy .cell.focus .face { box-shadow: 0 0 0 5px var(--ring), 0 16px 34px 
 body.omarchy .cell.focus .label { color: var(--fgb); }
 body.omarchy #toast { background: rgba(var(--dark-rgb), 0.94); color: var(--fgb); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(var(--muted-rgb), 0.7); }
 body.omarchy #gallery .hint { background: rgba(var(--dark-rgb), 0.8); color: var(--fgb); }
+
+/* MARK: - miguel-custom: theme picker (#themes): a panel over the bottom of the home, every theme as a card. Colours
+   come from the previewed theme (fallbacks for the Classic looks); the focused card grows with a 5px ring. */
+#themes { z-index: 3; opacity: 0; visibility: hidden; -webkit-transition: opacity 0.3s, visibility 0s 0.3s; transition: opacity 0.3s, visibility 0s 0.3s; }
+#themes.open { opacity: 1; visibility: visible; -webkit-transition-delay: 0s; transition-delay: 0s; }
+#themes .box { position: absolute; left: 50px; width: 1820px; top: 444px; height: 600px; border-radius: 40px; background: rgba(var(--dark-rgb, 28, 28, 30), 0.92); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(var(--muted-rgb, 72, 72, 74), 0.7); color: var(--fgb, #F5F5F7); }
+#themes .head { position: absolute; left: 40px; top: 28px; height: 46px; line-height: 46px; font-size: 34px; font-weight: 600; }
+#themes .head .sym { width: 36px; height: 36px; margin-right: 14px; vertical-align: -6px; color: var(--accent, #F5F5F7); }
+#themes .hint { position: absolute; right: 40px; top: 38px; font-size: 24px; font-weight: 500; color: var(--fg, rgba(245, 245, 247, 0.7)); }
+#themes .grid { position: absolute; left: 36px; top: 100px; }
+.tcard { position: absolute; width: 180px; height: 156px; -webkit-transition: -webkit-transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2); transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+.tcard .thumb { position: absolute; left: 0; top: 0; width: 180px; height: 101px; border-radius: 14px; background-size: cover; background-position: center; background-color: rgba(var(--muted-rgb, 72, 72, 74), 0.5); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); -webkit-transition: box-shadow 0.25s; transition: box-shadow 0.25s; }
+.tcard .thumb.auto { background-image: linear-gradient(135deg, #F5F5F7 50%, #1C1C1E 50%); }
+.tcard .thumb.light { background-image: linear-gradient(#F5F5F7, #E2E2E7); }
+.tcard .thumb.dark { background-image: linear-gradient(#1C1C1E, #0B0B0D); }
+.tcard.on .thumb:after { content: ''; position: absolute; right: 8px; top: 8px; width: 20px; height: 20px; border-radius: 10px; background: var(--ring, #FFF); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.45); }
+.tcard .swatches { position: absolute; left: 0; top: 109px; width: 180px; height: 10px; border-radius: 5px; overflow: hidden; display: -webkit-flex; display: flex; }
+.tcard .swatches span { -webkit-flex: 1; flex: 1; }
+.tcard .name { position: absolute; left: -8px; right: -8px; top: 124px; text-align: center; font-size: 22px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fg, rgba(245, 245, 247, 0.7)); }
+.tcard.on .name { color: var(--fgb, #F5F5F7); font-weight: 700; }
+.tcard.focus { z-index: 1; -webkit-transform: scale(1.1); transform: scale(1.1); }
+.tcard.focus .thumb { box-shadow: 0 0 0 5px var(--ring, #FFF), 0 14px 30px rgba(0, 0, 0, 0.5); }
+.tcard.focus .name { color: var(--fgb, #F5F5F7); font-weight: 700; }
+.picking #platter, .picking #tiles { opacity: 0; }
+.picking #clock { -webkit-transform: translateY(-150px); transform: translateY(-150px); }

@@ -155,11 +155,11 @@
 
   // MARK: - Focus
 
-  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery'};   // miguel-custom: GALLERY
-  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0};
+  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery', THEMES: 'themes'};   // miguel-custom: GALLERY, THEMES
+  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, theme: 0};   // miguel-custom: theme
   var cards = [];
 
-  function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT; }
+  function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.THEMES; }   // miguel-custom: THEMES
 
   function updateFocus() {
     var i, list;
@@ -183,6 +183,8 @@
     $('apps').lastChild.style.webkitTransform = $('apps').lastChild.style.transform = 'translateY(' + (-first * 239) + 'px)';
     focusRows($('settings'), st.row, st.zone === Z.SETTINGS);
     focusRows($('shelfedit'), st.edit, st.zone === Z.EDIT);
+    list = document.querySelectorAll('#themes .tcard');   // miguel-custom
+    for (i = 0; i < list.length; i++) setClass(list[i], 'focus', st.zone === Z.THEMES && st.theme === i);
     setClass(body, 'drawer-open', st.zone === Z.DRAWER || st.zone === Z.GALLERY);   // miguel-custom: the gallery opens over the drawer
   }
 
@@ -220,11 +222,12 @@
     $('tabs').innerHTML = '';
     var buttons = $('buttons');
     buttons.innerHTML = '';
+    // miguel-custom: a Temas (palette) button before Ajustes: the theme picker.
     var defs = [['live_tv', tr('TV aberta', 'Live TV', 'TV en vivo')], ['hdmi', tr('Entradas HDMI', 'HDMI Inputs', 'Entradas HDMI')],
-      ['settings', tr('Ajustes', 'Settings', 'Ajustes')]];
-    for (var b = 0; b < 3; b++) {
-      var r = el('button', 'round' + (b === 2 ? ' last' : ''), buttons);
-      r.style.left = (1596 + 88 * b) + 'px';
+      ['palette', tr('Temas', 'Themes', 'Temas')], ['settings', tr('Ajustes', 'Settings', 'Ajustes')]];
+    for (var b = 0; b < defs.length; b++) {
+      var r = el('button', 'round' + (b === defs.length - 1 ? ' last' : ''), buttons);
+      r.style.left = (1772 - 88 * (defs.length - 1 - b)) + 'px';
       sym(defs[b][0], r);
       el('div', 'tip', r, defs[b][1]);
       hover(r, Z.TOP, 3 + b);
@@ -475,6 +478,7 @@
   }
 
   function closeSheets() {
+    if (st.zone === Z.THEMES) { st.zone = Z.SHELF; hideThemes(); }   // miguel-custom: the picker, cancelled
     setClass($('apps'), 'open', false);
     setClass($('settings'), 'open', false);
     setClass($('shelfedit'), 'open', false);
@@ -494,7 +498,7 @@
         step: function (d) { cycle('temperature', ['auto', 'C', 'F'], unit, d); renderPanels(); }},
       // miguel-custom: the Omarchy themes first, then the original looks.
       {label: tr('Tema', 'Theme', 'Tema'), value: omarchy(theme) ? omarchy(theme).name : theme === 'light' ? tr('Claro', 'Light', 'Claro') : theme === 'dark' ? tr('Escuro', 'Dark', 'Oscuro') : auto,
-        step: function (d) { cycle('theme', (window.OMARCHY || []).map(function (t) { return t.id; }).concat(['auto', 'light', 'dark']), theme, d); checkNight(); }},
+        step: function () { openThemes(true); }},   // miguel-custom: the theme picker
       {label: tr('Widget do clima', 'Weather widget', 'Widget del clima'), toggle: Prefs.weather(),
         step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); }},
       {label: tr('Widget de cotações', 'Quotes widget', 'Widget de cotizaciones'), toggle: Prefs.quotes(),
@@ -645,6 +649,7 @@
         if (st.top < 3) return;
         if (st.top === 3) { var live = liveTV(); if (live) launcher(live.id, tr('TV aberta', 'Live TV', 'TV en vivo'))(); }
         else if (st.top === 4) { st.zone = Z.SHELF; openDrawer(); st.drawer = 1 < drawerInputs ? 1 : 0; updateFocus(); }
+        else if (st.top === 5) openThemes(false);   // miguel-custom: the palette button
         else openSettings();
         return;
       case Z.CARDS:
@@ -665,6 +670,9 @@
         return;
       case Z.EDIT:
         editShelf(0);
+        return;
+      case Z.THEMES:   // miguel-custom
+        closeThemes(true);
         return;
     }
   }
@@ -693,7 +701,7 @@
         break;
       case Z.TOP:
         if (dx) {
-          st.top = Math.max(3, Math.min(5, st.top + dx));   // miguel-custom: 3 (no tabs), was 0
+          st.top = Math.max(3, Math.min(6, st.top + dx));   // miguel-custom: 3 (no tabs), was 0; 6 (the palette button)
           if (st.top < 3) selectTab(st.top);   // as on Apple TV: focusing a tab selects it
         } else if (dy > 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = Math.min(cards.length - 1, st.top < 3 ? 0 : cards.length - 1); }
@@ -724,12 +732,19 @@
         if (dy) st.edit = Math.max(0, Math.min(apps.length - 1, st.edit + dy));
         else if (dx) editShelf(dx);
         break;
+      case Z.THEMES:   // miguel-custom: the grid, no wrapping; ↓ on the next-to-last row reaches the last card
+        var n = themeChoices().length, to = st.theme + dx + dy * THEME_COLS;
+        if (dx && Math.floor(to / THEME_COLS) !== Math.floor(st.theme / THEME_COLS)) to = st.theme;
+        if (dy > 0 && to >= n && Math.floor(st.theme / THEME_COLS) < Math.floor((n - 1) / THEME_COLS)) to = n - 1;
+        if (to >= 0 && to < n && to !== st.theme) { st.theme = to; previewTheme(); }
+        break;
     }
     updateFocus();
   }
 
   function back() {
     if (st.zone === Z.GALLERY) { closeGallery(); return; }   // miguel-custom
+    if (st.zone === Z.THEMES) { closeThemes(false); return; }   // miguel-custom: cancel
     if (st.zone === Z.EDIT) { setClass($('shelfedit'), 'open', false); openSettings(); st.row = rowsNow.length - 2; updateFocus(); return; }
     if (sheetOpen()) { closeSheets(); return; }
     if (st.zone === Z.DRAWER) { closeDrawer(); return; }
@@ -740,7 +755,7 @@
   /** The pointer focuses what it's over (the Magic Remote, or a mouse when previewing). */
   function hover(node, zone, index) {
     node.onmouseover = function () {
-      if (saverOn || st.zone === Z.GALLERY || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT))) return;   // miguel-custom: not under the gallery
+      if (saverOn || st.zone === Z.GALLERY || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT || zone === Z.THEMES))) return;   // miguel-custom: not under the gallery
       if (zone === Z.DRAWER && st.zone !== Z.DRAWER) return;
       if (zone !== Z.DRAWER && st.zone === Z.DRAWER && zone !== Z.SHELF) return;
       if (zone === Z.SHELF && st.zone === Z.DRAWER) closeDrawer();
@@ -752,6 +767,7 @@
       else if (zone === Z.APPS) st.grid = index;
       else if (zone === Z.SETTINGS) st.row = index;
       else if (zone === Z.EDIT) st.edit = index;
+      else if (zone === Z.THEMES && st.theme !== index) { st.theme = index; previewTheme(); }   // miguel-custom
       updateFocus();
     };
     node.onclick = function () { node.onmouseover(); activate(); };
@@ -771,6 +787,7 @@
   // MARK: - Night, clock, screensaver
 
   function checkNight() {
+    if (st.zone === Z.THEMES) return;   // miguel-custom: the picker is previewing a theme
     setClass(body, 'night', Data.isNight(Date.now()));
     applyTheme(Prefs.theme());   // miguel-custom
   }
@@ -798,6 +815,88 @@
       body.style.setProperty('--' + k, hex);
       body.style.setProperty('--' + k + '-rgb', parseInt(hex.substr(1, 2), 16) + ', ' + parseInt(hex.substr(3, 2), 16) + ', ' + parseInt(hex.substr(5, 2), 16));
     }
+  }
+
+  // MARK: - Theme picker (miguel-custom): the palette button, or Ajustes do Início › Tema. A panel over the bottom
+  // of the home with every theme as a card (its default wallpaper, a swatch strip, the name); the arrows move and the
+  // focused theme is previewed live on the whole home; OK applies it, Back cancels.
+
+  var THEME_COLS = 9, themeFromSettings = false, themePreview = 0;
+  var CLASSIC = {auto: ['#F5F5F7', '#1C1C1E', '#0A84FF', '#FF453A', '#30D158', '#FFD60A'],
+    light: ['#F5F5F7', '#E2E2E7', '#1D1D1F', '#0A84FF', '#30D158', '#FF453A'],
+    dark: ['#1C1C1E', '#0B0B0D', '#F5F5F7', '#0A84FF', '#30D158', '#FF453A']};
+
+  function themeChoices() {
+    return (window.OMARCHY || []).map(function (t) {
+      return {id: t.id, name: t.name, thumb: 'wallpapers/thumbs/' + t.id + '.jpg', swatches: [t.c.bg, t.c.fg, t.c.accent, t.c.red, t.c.green, t.c.yellow]};
+    }).concat([
+      {id: 'auto', name: tr('Clássico', 'Classic', 'Clásico'), swatches: CLASSIC.auto},
+      {id: 'light', name: tr('Clássico claro', 'Classic light', 'Clásico claro'), swatches: CLASSIC.light},
+      {id: 'dark', name: tr('Clássico escuro', 'Classic dark', 'Clásico oscuro'), swatches: CLASSIC.dark}]);
+  }
+
+  function renderThemes() {
+    var box = $('themes').firstChild, list = themeChoices(), saved = Prefs.theme();
+    box.innerHTML = '';
+    var head = el('div', 'head', box);
+    sym('palette', head);
+    head.appendChild(document.createTextNode(tr('Temas', 'Themes', 'Temas')));
+    el('div', 'hint', box, tr('As setas pré-visualizam · OK aplica · Voltar cancela', 'Arrows preview · OK applies · Back cancels', 'Las flechas previsualizan · OK aplica · Atrás cancela'));
+    var grid = el('div', 'grid', box);
+    for (var i = 0; i < list.length; i++) {
+      var t = list[i], card = el('div', 'tcard' + (t.id === saved ? ' on' : ''), grid);
+      card.style.left = (i % THEME_COLS) * 196 + 'px';
+      card.style.top = Math.floor(i / THEME_COLS) * 160 + 'px';
+      var thumb = el('div', 'thumb' + (t.thumb ? '' : ' ' + t.id), card);
+      if (t.thumb) thumb.style.backgroundImage = 'url(' + t.thumb + ')';
+      var strip = el('div', 'swatches', card);
+      for (var s = 0; s < t.swatches.length; s++) el('span', '', strip).style.backgroundColor = t.swatches[s];
+      el('div', 'name', card, t.name);
+      hover(card, Z.THEMES, i);
+    }
+  }
+
+  function openThemes(fromSettings) {
+    themeFromSettings = fromSettings;
+    setClass($('settings'), 'open', false);
+    var list = themeChoices();
+    st.theme = 0;
+    for (var i = 0; i < list.length; i++) if (list[i].id === Prefs.theme()) st.theme = i;
+    st.zone = Z.THEMES;
+    renderThemes();
+    setClass($('themes'), 'open', true);
+    setClass(body, 'picking', true);
+    updateFocus();
+  }
+
+  /** Shows a theme without saving it (the Classic looks by the clock, as Automático would). */
+  function showTheme(id) {
+    var t = omarchy(id), h = new Date().getHours();
+    setClass(body, 'night', t ? t.mode !== 'light' : id === 'dark' ? true : id === 'light' ? false : h < 7 || h >= 19);
+    applyTheme(id);
+  }
+
+  function previewTheme() {
+    clearTimeout(themePreview);
+    var t = themeChoices()[st.theme];
+    themePreview = setTimeout(function () { if (st.zone === Z.THEMES && t) showTheme(t.id); }, 300);   // after the key repeat settles
+  }
+
+  function hideThemes() {
+    clearTimeout(themePreview);
+    setClass($('themes'), 'open', false);
+    setClass(body, 'picking', false);
+    checkNight();
+  }
+
+  function closeThemes(apply) {
+    var t = themeChoices()[st.theme];
+    if (apply && t) Prefs.set('theme', t.id);
+    st.zone = Z.SHELF;
+    hideThemes();
+    if (apply && t) toast(tr('Tema: ', 'Theme: ', 'Tema: ') + t.name);
+    if (themeFromSettings) { openSettings(); st.row = 2; updateFocus(); }   // back on the Tema row
+    else { st.zone = Z.TOP; st.top = 5; updateFocus(); }
   }
 
   var saverOn = false, idleAt = Date.now(), saverIndex = 0, saverTimer = 0, SAVER_AFTER = 3 * 60000;   // miguel-custom: 3 idle minutes (was 5)
@@ -1027,5 +1126,5 @@
   }, 5000);
 
   // For the browser preview and tests.
-  window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast};
+  window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast, openThemes: openThemes};   // miguel-custom: openThemes
 })();

@@ -215,7 +215,7 @@
   var TAB_KIND = [null, 'movie', 'tv'];
 
   function renderTop() {
-    $('title').textContent = tr('Olá Miguel', 'For You', 'Para ti');   // miguel-custom: greeting instead of "Para você"
+    $('title').textContent = tr('Olá Helena e Miguel', 'For You', 'Para ti');   // miguel-custom: greeting instead of "Para você"
     // miguel-custom: no Explorar / Filmes / Séries tabs (nor their picks): the top row is only the round buttons (3-5).
     $('tabs').innerHTML = '';
     var buttons = $('buttons');

@@ -116,7 +116,11 @@ var TV = (function () {
     'geUOM7qimf.FOXPlay': 'icons/fox.svg',
     // miguel-custom: Smart Hub's Apple TV icon is an opaque square on its own dark gray, which showed as a box on
     // the tile; a transparent logo sits seamlessly on the tile's Apple TV gradient instead.
-    'com.samsung.tv.aria-video': 'icons/appletv.svg'
+    'com.samsung.tv.aria-video': 'icons/appletv.svg',
+    // miguel-custom: the same fix for Disney+, HBO Max and SmartOne IPTV (no clean free logo: '' = its name, "IPTV").
+    'MCmYXNxgcu.DisneyPlus': 'icons/disneyplus.svg',
+    '5b8c3eb16b.BeamCTVDev': 'icons/max.svg',
+    'p9WC6wWKA1.SmartOne': ''
   };
 
   // Names Smart Hub gets wrong: HBO's app has none (so it never reached the shelf), others are long or old.
@@ -184,7 +188,7 @@ var TV = (function () {
           if (!a.id || a.show === false || a.id === self || SAMSUNG_HIDDEN.test(a.id)) continue;
           var icon = a.iconPath || '';
           if (icon && icon.indexOf('://') < 0) icon = 'file://' + icon;
-          if (SAMSUNG_ICONS[a.id]) icon = SAMSUNG_ICONS[a.id];
+          if (SAMSUNG_ICONS.hasOwnProperty(a.id)) icon = SAMSUNG_ICONS[a.id];   // miguel-custom: '' = no icon, the name
           out.push({id: a.id, title: SAMSUNG_TITLES[a.id] || a.name || a.id, icon: icon, color: ''});
         }
         // The built-in Netflix stays only when the store's Netflix isn't installed.

@@ -1,0 +1,7 @@
+Screensaver wallpapers (miguel-custom), from the Omarchy themes' backgrounds:
+https://github.com/omacom/omarchy (formerly basecamp/omarchy), branch "quattro", fetched 2026-10-22.
+  tokyo-night--*.jpg  themes/tokyo-night/backgrounds/  (Tokyo Night theme)
+  osaka-jade--*.jpg   themes/osaka-jade/backgrounds/   (Osaka Jade theme, by Justin Lowry; omarchythemes.com/themes/osaka-jade)
+Resized and center-cropped to 1920x1080 JPEG (quality 82). The Omarchy repository is MIT licensed
+(Copyright (c) David Heinemeier Hansson); the images carry no separate per-file license or artist credit there,
+so their original authors' rights may still apply. Kept for personal use on this TV.

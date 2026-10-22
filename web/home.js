@@ -776,6 +776,14 @@
 
   function showSaver() {
     var photos = Data.showcase().filter(function (p) { return p.backdrop && Data.appFor(p.app); });
+    // miguel-custom: Omarchy wallpapers (Tokyo Night, Osaka Jade) instead of the picks' backdrops, from a random one.
+    var walls = window.WALLPAPERS || [];
+    if (walls.length) {
+      photos = walls.map(function (n) {
+        return {url: 'wallpapers/' + n, title: /^osaka-jade/.test(n) ? 'Osaka Jade' : /^tokyo-night/.test(n) ? 'Tokyo Night' : ''};
+      });
+      saverIndex = Math.floor(Math.random() * photos.length);
+    }
     saverOn = true;
     var s = $('saver');
     s.innerHTML = '';
@@ -791,7 +799,7 @@
       var p = photos.length ? photos[saverIndex++ % photos.length] : null;
       var back = front === a ? b : a;
       if (p) {
-        back.style.backgroundImage = 'url(' + Data.image(p.backdrop, 'original') + ')';
+        back.style.backgroundImage = 'url(' + (p.url || Data.image(p.backdrop, 'original')) + ')';   // miguel-custom: p.url
         back.style.webkitTransform = back.style.transform = 'scale(1.0)';
         clock.lastChild.textContent = p.title;
         setTimeout(function () {

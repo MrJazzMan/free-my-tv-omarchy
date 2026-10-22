@@ -70,6 +70,13 @@ def main():
                                   ('accent', 'accent'), ('red', 'red'), ('green', 'green'), ('yellow', 'yellow'),
                                   ('blue', 'blue'), ('magenta', 'magenta'), ('cyan', 'cyan'))}
         c['ring'] = ring(p)
+        # miguel-custom: a theme's own Hyprland active border (a gradient, e.g. "rgba(26a269ee) rgba(2ec27eee) 45deg"),
+        # as CSS for border-image; the other themes' active border is their accent (default/themed/hyprland.lua.tpl).
+        if 'hyprland_active_border' in p:
+            parts = p['hyprland_active_border'].split()
+            stops = ['#' + x[5:11] for x in parts if x.startswith('rgba(')]
+            angle = next((x for x in parts if x.endswith('deg')), '90deg')
+            c['grad'] = 'linear-gradient(%s, %s)' % (angle, ', '.join(stops))
         out.append({'id': t, 'name': NAMES.get(t, t.replace('-', ' ').title()), 'mode': p.get('mode', 'dark'),
                     'wall': t + '--' + os.path.splitext(bgs[0])[0] + '.jpg', 'c': c})
     with open(os.path.join(WEB, 'themes.js'), 'w', encoding='utf-8') as f:

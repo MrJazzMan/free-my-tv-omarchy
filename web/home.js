@@ -824,10 +824,12 @@
     setClass(body, 'omarchy-light', !!t && t.mode === 'light');
     homeWall(t && (window.WALLPAPERS || []).indexOf(t.wall) >= 0 ? 'wallpapers/' + t.wall : '');
     if (!t) return;
+    body.style.setProperty('--grad', 'none');   // a theme's own active-border gradient (t.c.grad), when it has one
     for (var k in t.c) {
       if (!t.c.hasOwnProperty(k)) continue;
       var hex = t.c[k];
       body.style.setProperty('--' + k, hex);
+      if (hex.charAt(0) !== '#') continue;
       body.style.setProperty('--' + k + '-rgb', parseInt(hex.substr(1, 2), 16) + ', ' + parseInt(hex.substr(3, 2), 16) + ', ' + parseInt(hex.substr(5, 2), 16));
     }
   }

@@ -19,6 +19,7 @@ MAP = {
     "chevron_down": ("keyboard_arrow_down", 0), "sunrise": ("wb_twilight", 1), "sunset": ("wb_twilight", 1),
     "live_tv": ("live_tv", 1), "bitcoin": ("currency_bitcoin", 0),
     "palette": ("palette", 1),   # miguel-custom: the theme picker button
+    "wifi": ("wifi", 1), "wifi_off": ("wifi_off", 1), "search": ("search", 1),   # miguel-custom: the Omarchy bar and menus
 }
 
 

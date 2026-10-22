@@ -100,7 +100,8 @@ def files(config, made_by):
         if name.endswith('.png') or name.startswith('LICENSE'):
             with open(os.path.join(symbols, name), 'rb') as f:
                 out['symbols/' + name] = f.read()
-    for name in ('InterVariable.ttf', 'OFL.txt'):
+    # miguel-custom: JetBrains Mono (OFL) and the Omarchy glyph (U+E900 of Omarchy's omarchy.ttf, MIT) for the Omarchy look.
+    for name in ('InterVariable.ttf', 'OFL.txt', 'JetBrainsMono.woff', 'JetBrainsMono-OFL.txt', 'omarchy-glyph.woff', 'omarchy-glyph-LICENSE.txt'):
         with open(os.path.join(ROOT, 'app', 'assets', 'fonts', name), 'rb') as f:
             out['fonts/' + name] = f.read()
     return out

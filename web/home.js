@@ -66,6 +66,8 @@
     ['appletv', /appletv|apple\.tv/, /apple tv/i, ['#1C1C1E', '#000000']],
     ['netflix', /^netflix$/, /netflix/i, ['#0A0A0A', '#000000']],
     ['youtube', /youtube/, /^youtube$/i, ['#1C1C1E', '#09090A']],
+    // miguel-custom: the Vodafone box on HDMI 1 (an input, not an app: see EXTRA_TILES), right after YouTube.
+    ['vodafone', /^source:HDMI:1$/, /^vodafone tv$/i, ['#E60000', '#A30000']],
     ['prime', /^amazon$/, /prime video|amazon/i, ['#2AA8FF', '#0A68D4']],
     ['disney', /disney/, /disney/i, ['#173584', '#08143F']],
     ['max', /hbo|wbd/, /^(hbo )?max$|hbo max/i, ['#5C30E8', '#221684']],
@@ -81,6 +83,10 @@
   var MAX_SHELF = 8;
   // miguel-custom: shelf keys left out of the default dock (their brand colors still apply elsewhere).
   var SHELF_SKIP = {netflix: true};
+  // miguel-custom: dock tiles that aren't installed apps. TV.launch switches sources for 'source:' ids (as the drawer's
+  // HDMI keys do); Samsung only, as that's the id format tv.js uses there.
+  var VODAFONE = 'source:HDMI:1';
+  var EXTRA_TILES = [{id: VODAFONE, title: 'Vodafone TV', icon: '', color: '#E60000'}];
 
   function shelfKey(app) {
     for (var i = 0; i < SHELF.length; i++) if (SHELF[i][1].test(app.id) || SHELF[i][2].test(app.title)) return SHELF[i];
@@ -120,6 +126,16 @@
 
   function pickShelf() {
     var chosen = Prefs.shelf(), out = [];
+    // miguel-custom: a dock order saved before the Vodafone tile existed gets it once, after YouTube (still removable).
+    var flag = 'fmtv.miguel.vodafone', seen = '1';
+    try { seen = localStorage.getItem(flag); localStorage.setItem(flag, '1'); } catch (e) {}
+    if (chosen && !seen && TV.name === 'tizen' && chosen.indexOf(VODAFONE) < 0) {
+      var yt = -1;
+      for (var k = 0; k < chosen.length; k++) if (/youtube/i.test(chosen[k])) yt = k;
+      chosen = chosen.slice();
+      chosen.splice(yt < 0 ? chosen.length : yt + 1, 0, VODAFONE);
+      Prefs.set('shelf', chosen);
+    }
     if (chosen) {
       for (var i = 0; i < chosen.length && out.length < MAX_SHELF; i++) {
         for (var j = 0; j < apps.length; j++) if (apps[j].id === chosen[i]) out.push(apps[j]);
@@ -849,6 +865,7 @@
     TV.apps(function (list) {
       apps = list;
       Data.setApps(apps);
+      if (TV.name === 'tizen') apps = apps.concat(EXTRA_TILES);   // miguel-custom: after setApps (not a streaming app)
       pickShelf();
       TV.inputs(function (list2) {
         inputs = list2;

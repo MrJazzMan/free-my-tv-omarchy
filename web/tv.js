@@ -120,7 +120,9 @@ var TV = (function () {
     // miguel-custom: the same fix for Disney+, HBO Max and SmartOne IPTV (no clean free logo: '' = its name, "IPTV").
     'MCmYXNxgcu.DisneyPlus': 'icons/disneyplus.svg',
     '5b8c3eb16b.BeamCTVDev': 'icons/max.svg',
-    'p9WC6wWKA1.SmartOne': ''
+    'p9WC6wWKA1.SmartOne': '',
+    // miguel-custom: same seamless-logo fix as Apple TV / Disney+ / Max (Smart Hub's Twitch icon is a boxed square).
+    'Jz7aUrV2Q4.Twitch': 'icons/twitch.svg'
   };
 
   // Names Smart Hub gets wrong: HBO's app has none (so it never reached the shelf), others are long or old.

@@ -68,6 +68,8 @@
     ['youtube', /youtube/, /^youtube$/i, ['#1C1C1E', '#09090A']],
     // miguel-custom: the Vodafone box on HDMI 1 (an input, not an app: see EXTRA_TILES), right after YouTube.
     ['vodafone', /^source:HDMI:1$/, /^vodafone tv$/i, ['#E60000', '#A30000']],
+    // miguel-custom: PlayStation on HDMI 3 (same source: pattern as Vodafone).
+    ['playstation', /^source:HDMI:3$/, /^playstation$/i, ['#003087', '#000000']],
     ['prime', /^amazon$/, /prime video|amazon/i, ['#2AA8FF', '#0A68D4']],
     ['disney', /disney/, /disney/i, ['#173584', '#08143F']],
     ['max', /hbo|wbd/, /^(hbo )?max$|hbo max/i, ['#5C30E8', '#221684']],
@@ -78,15 +80,22 @@
     ['globoplay', /globoplay/, /globoplay/i, ['#FF8A1F', '#FF2D5A']],
     // miguel-custom: the IPTV app (SmartOne IPTV Player on the living-room TV), just before Spotify.
     ['iptv', /^p9WC6wWKA1\.SmartOne$/, /^iptv$/i, ['#3A3A40', '#161618']],
+    // miguel-custom: Twitch brand colours for All Apps / shelf face (seamless icon is in SAMSUNG_ICONS).
+    ['twitch', /twitch/, /^twitch$/i, ['#9146FF', '#5C2D91']],
     ['spotify', /spotify/, /spotify/i, ['#1DB954', '#0F7A36']]
   ];
-  var MAX_SHELF = 8;
+  var MAX_SHELF = 9;   // miguel-custom: room for PlayStation once without kicking others (was 8)
   // miguel-custom: shelf keys left out of the default dock (their brand colors still apply elsewhere).
   var SHELF_SKIP = {netflix: true};
   // miguel-custom: dock tiles that aren't installed apps. TV.launch switches sources for 'source:' ids (as the drawer's
   // HDMI keys do); Samsung only, as that's the id format tv.js uses there.
   var VODAFONE = 'source:HDMI:1';
-  var EXTRA_TILES = [{id: VODAFONE, title: 'Vodafone TV', icon: '', color: '#E60000'}];
+  var PLAYSTATION = 'source:HDMI:3';
+  var EXTRA_TILES = [
+    {id: VODAFONE, title: 'Vodafone TV', icon: '', color: '#E60000'},
+    // miguel-custom: PlayStation on HDMI 3; white logo on the PlayStation blue/black gradient.
+    {id: PLAYSTATION, title: 'PlayStation', icon: 'icons/playstation.svg', color: '#003087'}
+  ];
 
   function shelfKey(app) {
     for (var i = 0; i < SHELF.length; i++) if (SHELF[i][1].test(app.id) || SHELF[i][2].test(app.title)) return SHELF[i];
@@ -134,6 +143,15 @@
       for (var k = 0; k < chosen.length; k++) if (/youtube/i.test(chosen[k])) yt = k;
       chosen = chosen.slice();
       chosen.splice(yt < 0 ? chosen.length : yt + 1, 0, VODAFONE);
+      Prefs.set('shelf', chosen);
+    }
+    // miguel-custom: insert PlayStation once after Vodafone (still removable via Prateleira).
+    var psFlag = 'fmtv.miguel.playstation', psSeen = '1';
+    try { psSeen = localStorage.getItem(psFlag); localStorage.setItem(psFlag, '1'); } catch (e) {}
+    if (chosen && !psSeen && TV.name === 'tizen' && chosen.indexOf(PLAYSTATION) < 0) {
+      var vf = chosen.indexOf(VODAFONE);
+      chosen = chosen.slice();
+      chosen.splice(vf < 0 ? chosen.length : vf + 1, 0, PLAYSTATION);
       Prefs.set('shelf', chosen);
     }
     if (chosen) {
@@ -731,6 +749,16 @@
       case Z.THEMES:   // miguel-custom
         closeThemes(true);
         return;
+      case Z.GALLERY:   // miguel-custom: OK sets this wallpaper as the home/main background
+        var p = galleryList[galleryIndex];
+        if (p) {
+          var name = p.url.replace(/^wallpapers\//, '');
+          Prefs.set('homeWall', name);
+          homeWall(p.url);
+          toast(tr('Fundo do início atualizado', 'Home wallpaper updated', 'Fondo de inicio actualizado'));
+          closeGallery();
+        }
+        return;
     }
   }
 
@@ -879,7 +907,10 @@
     var t = omarchy(id);
     setClass(body, 'omarchy', !!t);
     setClass(body, 'omarchy-light', !!t && t.mode === 'light');
-    homeWall(t && (window.WALLPAPERS || []).indexOf(t.wall) >= 0 ? 'wallpapers/' + t.wall : '');
+    // miguel-custom: a gallery-picked home wallpaper wins over the theme default (unless the file is gone).
+    var custom = Prefs.homeWall(), walls = window.WALLPAPERS || [];
+    var wall = custom && walls.indexOf(custom) >= 0 ? custom : (t && walls.indexOf(t.wall) >= 0 ? t.wall : '');
+    homeWall(wall ? 'wallpapers/' + wall : '');
     if (!t) return;
     body.style.setProperty('--grad', 'none');   // a theme's own active-border gradient (t.c.grad), when it has one
     for (var k in t.c) {
@@ -995,7 +1026,13 @@
     galleryList = wallpapers();
     if (!galleryList.length) return;
     st.zone = Z.GALLERY;
+    // miguel-custom: open on the wallpaper currently behind the home when possible.
+    var want = Prefs.homeWall(), t0 = omarchy(Prefs.theme());
+    if (!want && t0) want = t0.wall || '';
     galleryIndex = 0;
+    for (var gi = 0; gi < galleryList.length; gi++) {
+      if (galleryList[gi].url === 'wallpapers/' + want) { galleryIndex = gi; break; }
+    }
     var g = $('gallery');
     g.innerHTML = '';
     el('div', 'photo', g);
@@ -1004,7 +1041,7 @@
     var cap = el('div', 'caption', g);
     el('div', 'name', cap);
     el('div', 'count', cap);
-    var hint = el('div', 'hint', g, tr('‹ › para ver mais  ·  ↑ ou Voltar para sair', '‹ › to browse  ·  ↑ or Back to return', '‹ › para ver más  ·  ↑ o Atrás para volver'));
+    var hint = el('div', 'hint', g, tr('‹ › para ver  ·  OK fundo do início  ·  ↑ ou Voltar', '‹ › to browse  ·  OK sets home wallpaper  ·  ↑ or Back', '‹ › para ver  ·  OK fondo de inicio  ·  ↑ o Atrás'));
     clearTimeout(galleryHint);
     galleryHint = setTimeout(function () { setClass(hint, 'quiet', true); }, 5000);
     showWall(0);

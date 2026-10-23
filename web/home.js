@@ -173,8 +173,8 @@
 
   // MARK: - Focus
 
-  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery', THEMES: 'themes'};   // miguel-custom: GALLERY, THEMES
-  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, theme: 0};   // miguel-custom: theme
+  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery', THEMES: 'themes', WS: 'ws'};   // miguel-custom: GALLERY, THEMES, WS
+  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, theme: 0, ws: Prefs.ws(), wsFocus: 0};   // miguel-custom: theme, ws
   var cards = [];
 
   function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.THEMES; }   // miguel-custom: THEMES
@@ -319,22 +319,57 @@
     img.src = url;
   }
 
-  // MARK: - Top bar (miguel-custom): with an Omarchy theme, a Waybar-like bar: the Omarchy glyph and "workspaces"
-  // (1 home, 2 inputs, 3 gallery, 4 apps, 5 settings: the one on screen lit) on the left, the clock in the middle,
-  // weather, network and the crypto quotes on the right, then the round buttons as bar icons.
+  // MARK: - Top bar (miguel-custom): Waybar-like bar with Omarchy glyph and 5 choosable workspaces (wallpaper
+  // slots) on the left, clock in the middle, weather / network / quotes on the right, round buttons as bar icons.
 
-  var WS = [[Z.SHELF, Z.TOP, Z.CARDS], [Z.DRAWER], [Z.GALLERY], [Z.APPS], [Z.SETTINGS, Z.EDIT, Z.THEMES]];
+  var WS_COUNT = 5;
 
   function setText(node, s) { if (node.textContent !== s) node.textContent = s; }
 
+  function wsName(i) {
+    return i === 0 ? tr('início', 'home', 'inicio') : 'ws' + (i + 1);
+  }
+
+  /** Apply the current workspace's wallpaper (per-ws Prefs; empty → theme default). */
+  function applyWsWall() {
+    var t = omarchy(Prefs.theme());
+    var custom = Prefs.wsWalls()[st.ws] || '';
+    var walls = window.WALLPAPERS || [];
+    var wall = custom && walls.indexOf(custom) >= 0 ? custom : (t && walls.indexOf(t.wall) >= 0 ? t.wall : '');
+    homeWall(wall ? 'wallpapers/' + wall : '');
+  }
+
+  /** Close overlays and land on workspace n's home (wallpaper + shelf). Same n → just refocus shelf. */
+  function switchWorkspace(n) {
+    if (n < 0 || n >= WS_COUNT) return;
+    if (st.zone === Z.GALLERY) { setClass($('gallery'), 'on', false); clearTimeout(galleryHint); }
+    if (st.zone === Z.THEMES) hideThemes();
+    setClass($('apps'), 'open', false);
+    setClass($('settings'), 'open', false);
+    setClass($('shelfedit'), 'open', false);
+    if (n === st.ws) {
+      st.zone = Z.SHELF;
+      updateFocus();
+      return;
+    }
+    st.ws = n;
+    Prefs.set('ws', n);
+    applyWsWall();
+    st.zone = Z.SHELF;
+    updateFocus();
+  }
+
   function renderWorkspaces() {
-    var ws = $('ws'), cur = 0, i;
-    for (i = 0; i < WS.length; i++) if (WS[i].indexOf(st.zone) >= 0) cur = i;
-    if (ws.children.length !== WS.length) { ws.innerHTML = ''; for (i = 0; i < WS.length; i++) el('span', 'w', ws, String(i + 1)); }
-    for (i = 0; i < WS.length; i++) setClass(ws.children[i], 'on', i === cur);
-    var names = [tr('início', 'home', 'inicio'), tr('entradas', 'inputs', 'entradas'), tr('galeria', 'gallery', 'galería'),
-      tr('apps', 'apps', 'apps'), st.zone === Z.THEMES ? tr('temas', 'themes', 'temas') : tr('ajustes', 'settings', 'ajustes')];
-    setText($('wsname'), names[cur]);
+    var ws = $('ws'), i;
+    if (ws.children.length !== WS_COUNT) {
+      ws.innerHTML = '';
+      for (i = 0; i < WS_COUNT; i++) hover(el('span', 'w', ws, String(i + 1)), Z.WS, i);
+    }
+    for (i = 0; i < WS_COUNT; i++) {
+      setClass(ws.children[i], 'on', i === st.ws);
+      setClass(ws.children[i], 'focus', st.zone === Z.WS && st.wsFocus === i);
+    }
+    setText($('wsname'), wsName(st.ws));
   }
 
   function renderBar() {
@@ -749,11 +784,14 @@
       case Z.THEMES:   // miguel-custom
         closeThemes(true);
         return;
-      case Z.GALLERY:   // miguel-custom: OK sets this wallpaper as the home/main background
+      case Z.WS:   // miguel-custom: OK switches to that workspace (wallpaper slot)
+        switchWorkspace(st.wsFocus);
+        return;
+      case Z.GALLERY:   // miguel-custom: OK sets this wallpaper for the current workspace
         var p = galleryList[galleryIndex];
         if (p) {
           var name = p.url.replace(/^wallpapers\//, '');
-          Prefs.set('homeWall', name);
+          Prefs.setWsWall(st.ws, name);
           homeWall(p.url);
           toast(tr('Fundo do início atualizado', 'Home wallpaper updated', 'Fondo de inicio actualizado'));
           closeGallery();
@@ -776,7 +814,8 @@
         else if (dy > 0) { openDrawer(); return; }
         else if (dy < 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = nearest(cardNodes, centerX(tiles[st.shelf])); }
-          else { st.zone = Z.TOP; st.top = 3; }   // miguel-custom: the first round button (no tabs)
+          else if (hasClass(body, 'omarchy')) { st.zone = Z.WS; st.wsFocus = st.ws; }   // miguel-custom: bar workspaces
+          else { st.zone = Z.TOP; st.top = 3; }   // first round button (no tabs)
         }
         break;
       case Z.CARDS:
@@ -786,12 +825,24 @@
         break;
       case Z.TOP:
         if (dx) {
-          st.top = Math.max(3, Math.min(6, st.top + dx));   // miguel-custom: 3 (no tabs), was 0; 6 (the palette button)
-          if (st.top < 3) selectTab(st.top);   // as on Apple TV: focusing a tab selects it
+          // miguel-custom: Left from the first bar button reaches the workspace pills
+          if (dx < 0 && st.top <= 3 && hasClass(body, 'omarchy')) { st.zone = Z.WS; st.wsFocus = WS_COUNT - 1; }
+          else {
+            st.top = Math.max(3, Math.min(6, st.top + dx));   // 3 (no tabs); 6 (palette)
+            if (st.top < 3) selectTab(st.top);
+          }
         } else if (dy > 0) {
           if (cards.length) { st.zone = Z.CARDS; st.card = Math.min(cards.length - 1, st.top < 3 ? 0 : cards.length - 1); }
           else st.zone = Z.SHELF;
         }
+        break;
+      case Z.WS:   // miguel-custom: Left/Right on 1–5, Down to the dock, Right past 5 to the bar buttons
+        if (dx) {
+          var next = st.wsFocus + dx;
+          if (next < 0) next = 0;
+          else if (next >= WS_COUNT) { st.zone = Z.TOP; st.top = 3; }
+          else st.wsFocus = next;
+        } else if (dy > 0) st.zone = Z.SHELF;
         break;
       case Z.DRAWER:
         if (dx) st.drawer = Math.max(0, Math.min(drawerItems.length - 1, st.drawer + dx));
@@ -829,6 +880,7 @@
 
   function back() {
     if (st.zone === Z.GALLERY) { closeGallery(); return; }   // miguel-custom
+    if (st.zone === Z.WS) { st.zone = Z.SHELF; updateFocus(); return; }   // miguel-custom
     if (st.zone === Z.THEMES) { closeThemes(false); return; }   // miguel-custom: cancel
     if (st.zone === Z.EDIT) { setClass($('shelfedit'), 'open', false); openSettings(); st.row = rowsNow.length - 2; updateFocus(); return; }
     if (sheetOpen()) { closeSheets(); return; }
@@ -846,6 +898,7 @@
       if (zone === Z.SHELF && st.zone === Z.DRAWER) closeDrawer();
       st.zone = zone;
       if (zone === Z.TOP) { st.top = index; if (index < 3) selectTab(index); }
+      else if (zone === Z.WS) st.wsFocus = index;
       else if (zone === Z.CARDS) st.card = index;
       else if (zone === Z.SHELF) st.shelf = index;
       else if (zone === Z.DRAWER) st.drawer = index;
@@ -907,10 +960,8 @@
     var t = omarchy(id);
     setClass(body, 'omarchy', !!t);
     setClass(body, 'omarchy-light', !!t && t.mode === 'light');
-    // miguel-custom: a gallery-picked home wallpaper wins over the theme default (unless the file is gone).
-    var custom = Prefs.homeWall(), walls = window.WALLPAPERS || [];
-    var wall = custom && walls.indexOf(custom) >= 0 ? custom : (t && walls.indexOf(t.wall) >= 0 ? t.wall : '');
-    homeWall(wall ? 'wallpapers/' + wall : '');
+    // miguel-custom: this workspace's wallpaper (gallery pick or theme default).
+    applyWsWall();
     if (!t) return;
     body.style.setProperty('--grad', 'none');   // a theme's own active-border gradient (t.c.grad), when it has one
     for (var k in t.c) {
@@ -1027,7 +1078,7 @@
     if (!galleryList.length) return;
     st.zone = Z.GALLERY;
     // miguel-custom: open on the wallpaper currently behind the home when possible.
-    var want = Prefs.homeWall(), t0 = omarchy(Prefs.theme());
+    var want = Prefs.wsWalls()[st.ws] || '', t0 = omarchy(Prefs.theme());
     if (!want && t0) want = t0.wall || '';
     galleryIndex = 0;
     for (var gi = 0; gi < galleryList.length; gi++) {
@@ -1238,5 +1289,5 @@
   }, 5000);
 
   // For the browser preview and tests.
-  window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast, openThemes: openThemes};   // miguel-custom: openThemes
+  window.FreeMyTV = {state: st, move: move, activate: activate, back: back, showSaver: showSaver, hideSaver: hideSaver, toast: toast, openThemes: openThemes, switchWorkspace: switchWorkspace};   // miguel-custom
 })();

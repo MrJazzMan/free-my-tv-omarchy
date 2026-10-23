@@ -44,14 +44,15 @@ body.omarchy .round.focus { -webkit-transform: none; transform: none; background
 body.omarchy .round .tip, body.omarchy .round.last .tip { top: 66px; left: auto; right: 0; width: auto; margin-left: 0; padding: 0 16px; height: 44px; line-height: 40px; box-sizing: border-box; background: var(--bg); border: 2px solid var(--fg); color: var(--fgb); font-size: 21px; font-weight: 600; text-align: left; -webkit-transition: none; transition: none; }
 body.omarchy .round.focus .tip { color: var(--fgb); }
 
-/* The title and the clock under the bar: big monospace, the title with a terminal's block cursor (omarchy.org). */
-body.omarchy #title { top: 120px; font-size: 72px; font-weight: 700; letter-spacing: 0; }
-body.omarchy #title:after { content: ''; display: inline-block; width: 0.5em; height: 0.9em; margin-left: 0.25em; vertical-align: -0.08em; background: var(--ring); -webkit-animation: omarchy-blink 1.1s steps(1) infinite; animation: omarchy-blink 1.1s steps(1) infinite; }
+/* Center greeting / big clock / date: redundant with the bar clock; Classic themes keep them via home.css. */
+body.omarchy #title,
+body.omarchy #clock { display: none !important; }
+/* Workspace pills on the bar: remote-focusable (Hyprland-like switcher). */
+body.omarchy #ws .w { cursor: pointer; }
+body.omarchy #ws .w.focus { opacity: 1; color: var(--fgb); box-shadow: inset 0 0 0 4px var(--ring); }
+body.omarchy #ws .w.on.focus { color: var(--ring); box-shadow: inset 0 -4px 0 var(--ring), inset 0 0 0 4px var(--ring); }
 @-webkit-keyframes omarchy-blink { 50% { opacity: 0; } }
 @keyframes omarchy-blink { 50% { opacity: 0; } }
-body.omarchy.no-picks #clock { top: 330px; font-size: 168px; font-weight: 300; letter-spacing: -0.02em; }
-body.omarchy #clock .date { font-size: 36px; font-weight: 500; margin-top: 22px; }
-body.omarchy.picking #clock { -webkit-transform-origin: 0 0; transform-origin: 0 0; -webkit-transform: translateY(-96px) scale(0.75); transform: translateY(-96px) scale(0.75); }
 
 /* MARK: - Windows: the dock's tiles, the drawer's keys and panels are Hyprland windows: square, a 2px inactive border
    (Omarchy's rgba(595959aa)), gaps, no shadows and no glass; focused: a 5px active border (--ring, or the theme's own

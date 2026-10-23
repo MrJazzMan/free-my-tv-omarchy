@@ -51,7 +51,24 @@ var Prefs = (function () {
     coin: function (i) { var c = pick('coins', null); return c ? c[i] !== false : true; },
     shelf: function () { return pick('shelf', null); },
     // miguel-custom: basename under wallpapers/ for the home background; '' = the theme's default.
+    // Seed for workspace 1 when wsWalls is not set yet (see wsWalls).
     homeWall: function () { return pick('homeWall', ''); },
+    // miguel-custom: Omarchy workspaces 1–5 (stored 0–4): which is active, and each one's wallpaper.
+    ws: function () { var n = pick('ws', 0); return (n >= 0 && n <= 4) ? n : 0; },
+    wsWalls: function () {
+      var w = pick('wsWalls', null);
+      if (!w || !w.length) return [pick('homeWall', ''), '', '', '', ''];
+      w = w.slice(0, 5);
+      while (w.length < 5) w.push('');
+      return w;
+    },
+    setWsWall: function (i, name) {
+      if (i < 0 || i > 4) return;
+      var w = this.wsWalls();
+      w[i] = name || '';
+      this.set('wsWalls', w);
+      if (i === 0) this.set('homeWall', name || '');
+    },
     set: function (name, value) { v[name] = value; save(); this.version++; },
     setCoin: function (i, on) {
       var c = (pick('coins', null) || [true, true, true, true]).slice();

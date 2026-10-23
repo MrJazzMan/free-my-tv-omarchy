@@ -1,0 +1,150 @@
+/*
+ * omarchy: the Omarchy look, for the Omarchy themes only (body.omarchy; the Classic looks keep home.css).
+ * Modelled on github.com/omacom/omarchy (branch quattro): the shell's bar, menu, launcher, notifications and lock
+ * (default/themed/shell.toml.tpl), Hyprland's look (default/hypr/looknfeel.lua: rounding 0, border_size 2, gaps 5/10,
+ * no shadows, no blur; active border = the theme's accent or its own hyprland_active_border, inactive rgba(595959aa))
+ * and the monospace font (JetBrains Mono). Sizes are doubled or so for a TV seen from the sofa; focus borders are 4-5px.
+ * Colours: home.js puts the theme's colors.toml palette in --bg, --fg, --accent, ... (and --*-rgb) on <body>; --ring is
+ * the accent, or a stronger colour of the theme when the accent is too faint to show focus; --grad is the theme's own
+ * active-border gradient ("none" for most). No blur, no backdrop-filter; only opacity and transform animate.
+ */
+@font-face { font-family: 'JetBrains Mono'; src: url('fonts/JetBrainsMono.woff') format('woff'); font-weight: 100 800; }
+@font-face { font-family: 'Omarchy Glyph'; src: url('fonts/omarchy-glyph.woff') format('woff'); }
+
+/* MARK: - The top bar. Classic: an empty, zero-height holder for the round buttons and the quotes. */
+#bar { position: absolute; left: 0; top: 0; width: 1920px; height: 0; z-index: 2; -webkit-transition: opacity 0.3s; transition: opacity 0.3s; }
+#bar .left, #barclock, #bar .right { display: none; }
+body:not(.omarchy).drawer-open #bar { opacity: 0; }
+
+body.omarchy { font-family: 'JetBrains Mono', 'Inter', monospace; }
+body.omarchy #bar { height: 56px; background: var(--bg); color: var(--fg); font-size: 23px; font-weight: 500; line-height: 56px; white-space: nowrap; }
+body.omarchy #bar .left, body.omarchy #barclock, body.omarchy #bar .right { display: block; position: absolute; top: 0; height: 56px; }
+body.omarchy #bar .left { left: 34px; }
+body.omarchy #bar .logo { display: inline-block; vertical-align: top; margin-right: 20px; font-family: 'Omarchy Glyph'; font-size: 30px; color: var(--fgb); }
+body.omarchy #ws { display: inline-block; vertical-align: top; }
+body.omarchy #ws .w { display: inline-block; width: 42px; text-align: center; opacity: 0.5; }
+body.omarchy #ws .w.on { opacity: 1; color: var(--ring); font-weight: 800; box-shadow: inset 0 -4px 0 var(--ring); }
+body.omarchy #wsname { margin-left: 18px; }
+body.omarchy #barclock { left: 660px; width: 600px; text-align: center; color: var(--fgb); font-weight: 700; }
+body.omarchy #bar .right { right: 300px; }
+body.omarchy #barwx, body.omarchy #barnet { display: inline-block; margin-left: 26px; }
+body.omarchy #bar .right .sym { width: 28px; height: 28px; margin-right: 8px; vertical-align: -6px; }
+body.omarchy #quotes, body.omarchy #quotes.hide { right: 520px !important; top: 0; height: 56px; line-height: 56px; font-size: 21px; color: var(--fg); text-shadow: none; opacity: 1; }
+body.omarchy #quotes .q { margin-left: 22px; }
+body.omarchy #quotes svg { fill: var(--fg); }
+/* The round buttons become bar icons, like the bar's panel buttons; focused: the selection fill and a 4px ring. */
+body.omarchy .round { top: 0 !important; width: 60px; height: 56px; border-radius: 0; background: none; box-shadow: none; color: var(--fgb); -webkit-transition: none; transition: none; }
+body.omarchy .round:nth-child(1) { left: 1636px !important; }
+body.omarchy .round:nth-child(2) { left: 1696px !important; }
+body.omarchy .round:nth-child(3) { left: 1756px !important; }
+body.omarchy .round:nth-child(4) { left: 1816px !important; }
+body.omarchy .round .sym { left: 16px; top: 14px; width: 28px; height: 28px; }
+body.omarchy .round.focus { -webkit-transform: none; transform: none; background: var(--sel); color: var(--fgb); box-shadow: inset 0 0 0 4px var(--ring); }
+/* The name under a focused bar icon: a tooltip (the shell's [tooltip]: background, foreground border). */
+body.omarchy .round .tip, body.omarchy .round.last .tip { top: 66px; left: auto; right: 0; width: auto; margin-left: 0; padding: 0 16px; height: 44px; line-height: 40px; box-sizing: border-box; background: var(--bg); border: 2px solid var(--fg); color: var(--fgb); font-size: 21px; font-weight: 600; text-align: left; -webkit-transition: none; transition: none; }
+body.omarchy .round.focus .tip { color: var(--fgb); }
+
+/* Center greeting / big clock / date: redundant with the bar clock; Classic themes keep them via home.css. */
+body.omarchy #title,
+body.omarchy #clock { display: none !important; }
+/* Workspace pills on the bar: remote-focusable (Hyprland-like switcher). */
+body.omarchy #ws .w { cursor: pointer; }
+body.omarchy #ws .w.focus { opacity: 1; color: var(--fgb); box-shadow: inset 0 0 0 4px var(--ring); }
+body.omarchy #ws .w.on.focus { color: var(--ring); box-shadow: inset 0 -4px 0 var(--ring), inset 0 0 0 4px var(--ring); }
+@-webkit-keyframes omarchy-blink { 50% { opacity: 0; } }
+@keyframes omarchy-blink { 50% { opacity: 0; } }
+
+/* MARK: - Windows: the dock's tiles, the drawer's keys and panels are Hyprland windows: square, a 2px inactive border
+   (Omarchy's rgba(595959aa)), gaps, no shadows and no glass; focused: a 5px active border (--ring, or the theme's own
+   gradient through border-image), no zoom. */
+body.omarchy #platter { display: none; }
+body.omarchy .tile, body.omarchy .key, body.omarchy .panel, body.omarchy .cell .face { box-sizing: border-box; border: 2px solid rgba(89, 89, 89, 0.67); border-radius: 0; box-shadow: none; -webkit-transition: none; transition: none; }
+body.omarchy .tile::after { display: none; }
+body.omarchy .tile.focus, body.omarchy .key.focus, body.omarchy .cell.focus .face { -webkit-transform: none; transform: none; border: 5px solid var(--ring); border-image: var(--grad) 1; box-shadow: 0 0 0 4px var(--ring); }
+/* (the outer 4px: on the theme's background, where --ring is guaranteed to contrast, whatever the tile's colour) */
+body.omarchy .tile .word, body.omarchy .cell .face .word { font-weight: 800; letter-spacing: 0; }
+
+body.omarchy .glass { background: rgba(var(--bg-rgb), 0.94); box-shadow: none; }
+body.omarchy .row-title { font-size: 23px; font-weight: 700; color: var(--fg); }
+body.omarchy .row-title:before { content: '# '; color: var(--ring); }
+body.omarchy .key .label { font-size: 20px; top: 80px; }
+body.omarchy .key.focus { background: var(--sel); color: var(--fgb); }
+body.omarchy .key.focus .sym { color: var(--ring); }
+/* The weather and the prices like btop's boxes: the title sits on the top border. */
+body.omarchy .panel { overflow: visible; background: var(--bg); }
+body.omarchy .panel .head, body.omarchy .panel .side { top: -17px; height: 32px; line-height: 32px; padding: 0 12px; background: var(--bg); font-size: 22px; }
+body.omarchy .panel .head { left: 22px; font-weight: 800; color: var(--ring); }
+body.omarchy .panel .side { right: 22px; color: var(--fg); }
+body.omarchy #weather .now { top: 52px; }
+body.omarchy #weather .now .temp { font-size: 92px; font-weight: 300; letter-spacing: -0.04em; }
+body.omarchy #weather .cond { top: 168px; font-size: 26px; }
+body.omarchy #weather .range { top: 214px; font-size: 21px; }
+body.omarchy #weather .split { width: 2px; top: 30px; bottom: 30px; }
+body.omarchy #weather .hours { top: 46px; }
+body.omarchy #weather .sun { top: 214px; font-size: 21px; }
+body.omarchy #prices .coin { font-size: 26px; }
+body.omarchy #prices .coin { margin-top: -34px; }
+body.omarchy #prices .coin .p { font-size: 24px; }
+body.omarchy #prices .coin .c { border-radius: 0; font-size: 20px; font-weight: 700; }
+
+/* MARK: - Menus: All Apps, Ajustes do Início, Prateleira and Temas like the Omarchy menu and launcher: a scrim of the
+   background (0.5), a centred card (the background, a 2px foreground border), a search-style header with a block
+   cursor, rows; the selected row gets a fill, the ring colour for its text and a 4px ring. */
+body.omarchy .sheet { background: rgba(var(--bg-rgb), 0.55); color: var(--fgb); -webkit-transform: none; transform: none; }
+body.omarchy #settings .box, body.omarchy #shelfedit .box { background: var(--bg); border: 2px solid var(--fg); border-image: var(--grad) 1; border-radius: 0; box-shadow: none; left: 510px; width: 900px; top: 130px; padding: 30px 32px 26px; }
+body.omarchy .box .title, body.omarchy #apps h2 { height: 72px; line-height: 68px; box-sizing: border-box; margin: 0 0 22px; padding: 0 22px; border: 2px solid rgba(var(--fg-rgb), 0.35); font-size: 30px; font-weight: 600; color: var(--fgb); text-align: left; letter-spacing: 0; white-space: nowrap; }
+body.omarchy .box .title .sym { width: 30px; height: 30px; vertical-align: -5px; margin-right: 16px; color: var(--ring); }
+body.omarchy .box .title:after, body.omarchy #apps h2:after { content: ''; display: inline-block; width: 15px; height: 32px; margin-left: 8px; vertical-align: -5px; background: var(--fgb); -webkit-animation: omarchy-blink 1.1s steps(1) infinite; animation: omarchy-blink 1.1s steps(1) infinite; }
+body.omarchy .box .row { border-radius: 0; font-size: 28px; font-weight: 500; -webkit-transition: none; transition: none; }
+body.omarchy .box .row.focus { background: rgba(var(--fg-rgb), 0.12); color: var(--ring); box-shadow: inset 0 0 0 4px var(--ring); }
+body.omarchy .box .row.focus .value { color: var(--ring); }
+body.omarchy .box .hint { font-size: 21px; color: var(--fg); }
+body.omarchy .box .hint:before { content: '\276F  '; color: var(--ring); }
+body.omarchy .toggle, body.omarchy .toggle::after { border-radius: 0; box-shadow: none; }
+body.omarchy .toggle::after { background: var(--fgb); }
+body.omarchy .toggle.on::after { background: var(--bg); }
+
+/* All Apps: the launcher (home.js lists the apps when an Omarchy theme is on). */
+body.omarchy #apps.list:before { content: ''; position: absolute; left: 510px; top: 110px; width: 900px; height: 870px; box-sizing: border-box; background: rgba(var(--bg-rgb), 0.97); border: 2px solid var(--fg); border-image: var(--grad) 1; }
+body.omarchy #apps.list h2 { position: absolute; left: 546px; top: 146px; width: 828px; }
+body.omarchy #apps.list h2:before { content: ''; display: inline-block; width: 30px; height: 30px; margin-right: 16px; vertical-align: -5px; background: var(--ring); -webkit-mask: url(symbols/search.png) center / contain no-repeat; }
+body.omarchy #apps.list .grid { -webkit-transition: none; transition: none; }
+body.omarchy #apps.list .cell { width: 828px; height: 70px; }
+body.omarchy #apps.list .cell.out { visibility: hidden; }
+body.omarchy #apps.list .cell.focus { background: rgba(var(--fg-rgb), 0.12); box-shadow: inset 0 0 0 4px var(--ring); }
+body.omarchy #apps.list .cell .face { left: 12px; top: 8px; width: 96px; height: 54px; border-width: 1px; }
+body.omarchy #apps.list .cell.focus .face { border: 1px solid rgba(89, 89, 89, 0.67); border-image: none; }
+body.omarchy #apps.list .cell .label { left: 130px; right: 20px; top: 0; height: 70px; line-height: 70px; text-align: left; font-size: 28px; color: var(--fgb); }
+body.omarchy #apps.list .cell.focus .label { color: var(--ring); font-weight: 700; }
+
+/* Temas: Omarchy's image picker (selected: the accent border; the rest: the foreground at 0.28) inside a menu card. */
+body.omarchy #themes .box { border-radius: 0; background: rgba(var(--bg-rgb), 0.96); border: 2px solid var(--fg); border-image: var(--grad) 1; box-shadow: none; }
+body.omarchy #themes .head { left: 36px; top: 22px; width: 1000px; height: 60px; line-height: 56px; box-sizing: border-box; padding: 0 20px; border: 2px solid rgba(var(--fg-rgb), 0.35); font-size: 28px; }
+body.omarchy #themes .head .sym { width: 30px; height: 30px; vertical-align: -5px; color: var(--ring); }
+body.omarchy #themes .head:after { content: ''; display: inline-block; width: 14px; height: 30px; margin-left: 8px; vertical-align: -5px; background: var(--fgb); -webkit-animation: omarchy-blink 1.1s steps(1) infinite; animation: omarchy-blink 1.1s steps(1) infinite; }
+body.omarchy #themes .hint { top: 38px; font-size: 21px; }
+body.omarchy .tcard .thumb { border-radius: 0; box-shadow: inset 0 0 0 2px rgba(var(--fg-rgb), 0.28); }
+body.omarchy .tcard .swatches { border-radius: 0; }
+body.omarchy .tcard .name { font-size: 18px; }
+body.omarchy .tcard.on .thumb:after { border-radius: 0; }
+body.omarchy .tcard.focus .thumb { box-shadow: 0 0 0 5px var(--ring); }
+body.omarchy .tcard.focus .name { color: var(--ring); }
+
+/* MARK: - Notifications like the shell's (mako's before): top right under the bar, the background, a 2px active border,
+   and the countdown line in the accent. */
+body.omarchy #toast { left: auto; right: 34px; top: 80px; max-width: 640px; -webkit-transform: translateX(24px); transform: translateX(24px); padding: 20px 28px 24px; border-radius: 0; background: var(--bg); color: var(--fgb); border: 2px solid var(--ring); border-image: var(--grad) 1; box-shadow: none; font-size: 24px; font-weight: 500; }
+body.omarchy #toast.on { -webkit-transform: none; transform: none; }
+body.omarchy #toast:after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--accent); -webkit-transform-origin: 0 0; transform-origin: 0 0; }
+body.omarchy #toast.on:after { -webkit-animation: omarchy-countdown 6s linear forwards; animation: omarchy-countdown 6s linear forwards; }
+@-webkit-keyframes omarchy-countdown { from { -webkit-transform: scaleX(1); } to { -webkit-transform: scaleX(0); } }
+@keyframes omarchy-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* MARK: - Gallery and screensaver: the gallery's hint is a notification, its caption and the saver's clock are a lock
+   screen card (the background at 0.8, the active border). */
+body.omarchy #gallery .hint { left: auto; right: 34px; top: 34px; -webkit-transform: none; transform: none; border-radius: 0; padding: 18px 26px; background: var(--bg); color: var(--fgb); border: 2px solid var(--ring); border-image: var(--grad) 1; font-size: 23px; }
+body.omarchy #gallery .caption, body.omarchy #saver .clock { padding: 24px 34px 26px; border-radius: 0; background: rgba(var(--bg-rgb), 0.8); border: 2px solid var(--ring); border-image: var(--grad) 1; box-shadow: none; text-shadow: none; color: var(--fgb); }
+body.omarchy #gallery .caption .name { font-size: 36px; font-weight: 700; }
+body.omarchy #gallery .caption .count { font-size: 24px; color: var(--fg); }
+body.omarchy #saver .clock .time { font-size: 132px; font-weight: 300; letter-spacing: -0.03em; }
+body.omarchy #saver .clock .date { font-size: 30px; color: var(--fg); }
+body.omarchy #saver .clock .title { font-size: 23px; color: var(--fg); }

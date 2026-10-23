@@ -1,0 +1,24 @@
+Screensaver wallpapers (omarchy), from the Omarchy themes' backgrounds:
+https://github.com/omacom/omarchy (formerly basecamp/omarchy), branch "quattro", fetched 2026-10-22.
+  tokyo-night--*.jpg  themes/tokyo-night/backgrounds/  (Tokyo Night theme)
+  osaka-jade--*.jpg   themes/osaka-jade/backgrounds/   (Osaka Jade theme, by Justin Lowry; omarchythemes.com/themes/osaka-jade)
+Resized and center-cropped to 1920x1080 JPEG (quality 82). The Omarchy repository is MIT licensed
+(Copyright (c) David Heinemeier Hansson); the images carry no separate per-file license or artist credit there,
+so their original authors' rights may still apply. Bundled in this derivative for the Omarchy-style TV home experience.
+
+tokyo-night--0-liftoff.jpg: "Liftoff" by Tom Ballard (@tcballard, github.com/tcballard), added to Omarchy's Tokyo Night
+in omacom/omarchy PR #14755 (as 7-liftoff.webp) and moved to the front as 0-liftoff.webp by DHH in commit 097c733
+("Lead Tokyo Night's backgrounds with Liftoff", 2026-10-13): the Omarchy 4.5 default wallpaper. Credited in the
+screensaver and gallery captions. Original 8192x4608, here 1920x1080.
+
+All the other official Omarchy themes (omarchy), from https://github.com/omacom/omarchy themes/ on the default
+branch "quattro" (v4.5.0-rc1 line), commit 967bbdd, fetched 2026-10-23, with tools/omarchy_themes.py:
+  catppuccin, catppuccin-latte, ethereal, everforest, flexoki-light, gruvbox, hackerman, kanagawa, last-horizon,
+  lumon, lupine, matte-black, miasma, nord, retro-82, ristretto, rose-pine, solitude, starship, vantablack, white
+  <theme>--<name>.jpg   themes/<theme>/backgrounds/<name>.*: the first 3 in Omarchy's order (sorted; the first is the
+                        theme's default background), 1920x1080 JPEG (ffmpeg -q:v 4, about quality 80)
+  thumbs/<theme>.jpg    384x216 thumbnail of each theme's default background, for the theme picker
+  web/themes.js         each theme's palette, copied exactly from themes/<theme>/colors.toml
+Same terms as above: Omarchy is MIT licensed (Copyright (c) David Heinemeier Hansson); the backgrounds carry no
+separate per-file license or artist credit in the repository, so their original authors' rights may still apply.
+Bundled in this derivative for the Omarchy-style TV home experience.

@@ -1,0 +1,29 @@
+NOTICE
+======
+
+This repository is a derivative of Free My TV, focused on an Omarchy-style
+home experience for Samsung/Tizen TVs.
+
+Upstream
+--------
+Free My TV — https://github.com/simbasjungles/free-my-tv
+License: MIT (see LICENSE)
+
+Omarchy themes and wallpapers
+-----------------------------
+Theme palettes and wallpaper assets are derived from
+https://github.com/omacom/omarchy (MIT; Copyright (c) David Heinemeier Hansson).
+See web/wallpapers/SOURCES.txt for fetch details, theme lists, and notes that
+individual background artists may retain rights beyond the Omarchy MIT grant.
+
+Icons
+-----
+Seamless app logos (Apple TV, Disney+, Max, Twitch, PlayStation, and others)
+include artwork adapted from Simple Icons (https://simpleicons.org) and related
+sources as used by the upstream Free My TV project.
+
+This fork
+---------
+Sanitized public export of Omarchy-style customizations (themes, Waybar-like
+top bar, workspaces, gallery wallpaper, HDMI input tiles as examples).
+No personal configuration, signing keys, or private history are included.

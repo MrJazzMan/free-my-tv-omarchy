@@ -609,3 +609,17 @@ body.omarchy #gallery .hint { background: rgba(var(--dark-rgb), 0.8); color: var
 .tcard.focus .name { color: var(--fgb, #F5F5F7); font-weight: 700; }
 .picking #platter, .picking #tiles { opacity: 0; }
 .picking #clock { -webkit-transform: translateY(-150px); transform: translateY(-150px); }
+
+/* MARK: - Calendar panel (classic + shared) */
+#calendar .cal-labels, #calendar .cal-grid {
+  position: absolute; left: 28px; right: 28px; display: -webkit-box; display: -webkit-flex; display: flex;
+  -webkit-flex-wrap: wrap; flex-wrap: wrap;
+}
+#calendar .cal-labels { top: 56px; }
+#calendar .cal-grid { top: 100px; bottom: 24px; }
+#calendar .cal-dow, #calendar .cal-day {
+  width: 14.28%; text-align: center; font-size: 24px; line-height: 40px;
+}
+#calendar .cal-dow { opacity: 0.5; font-size: 18px; }
+#calendar .cal-day.mute { opacity: 0; }
+#calendar .cal-day.today { font-weight: 700; text-decoration: underline; }

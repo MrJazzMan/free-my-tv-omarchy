@@ -148,3 +148,19 @@ body.omarchy #gallery .caption .count { font-size: 24px; color: var(--fg); }
 body.omarchy #saver .clock .time { font-size: 132px; font-weight: 300; letter-spacing: -0.03em; }
 body.omarchy #saver .clock .date { font-size: 30px; color: var(--fg); }
 body.omarchy #saver .clock .title { font-size: 23px; color: var(--fg); }
+
+/* MARK: - Calendar panel (Omarchy clock month grid) */
+body.omarchy #calendar .cal-labels, body.omarchy #calendar .cal-grid {
+  position: absolute; left: 22px; right: 22px; display: -webkit-box; display: -webkit-flex; display: flex;
+  -webkit-flex-wrap: wrap; flex-wrap: wrap;
+}
+body.omarchy #calendar .cal-labels { top: 48px; }
+body.omarchy #calendar .cal-grid { top: 88px; bottom: 20px; }
+body.omarchy #calendar .cal-dow, body.omarchy #calendar .cal-day {
+  width: 14.28%; text-align: center; font-size: 22px; line-height: 36px; color: var(--fg);
+}
+body.omarchy #calendar .cal-dow { color: var(--muted, var(--fg)); opacity: 0.55; font-size: 18px; }
+body.omarchy #calendar .cal-day.mute { opacity: 0; }
+body.omarchy #calendar .cal-day.today {
+  color: var(--bg); background: var(--ring); border-radius: 0; font-weight: 700;
+}

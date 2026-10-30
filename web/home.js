@@ -82,7 +82,9 @@
     ['iptv', /^p9WC6wWKA1\.SmartOne$/, /^iptv$/i, ['#3A3A40', '#161618']],
     // miguel-custom: Twitch brand colours for All Apps / shelf face (seamless icon is in SAMSUNG_ICONS).
     ['twitch', /twitch/, /^twitch$/i, ['#9146FF', '#5C2D91']],
-    ['spotify', /spotify/, /spotify/i, ['#1DB954', '#0F7A36']]
+    ['spotify', /spotify/, /spotify/i, ['#1DB954', '#0F7A36']],
+    // miguel-custom: cliamp Lofi radio tile.
+    ['lofi', /^lofi:radio$/, /^lofi$/i, ['#7C5CFF', '#3D2A8C']]
   ];
   var MAX_SHELF = 9;   // miguel-custom: room for PlayStation once without kicking others (was 8)
   // miguel-custom: shelf keys left out of the default dock (their brand colors still apply elsewhere).
@@ -91,10 +93,15 @@
   // HDMI keys do); Samsung only, as that's the id format tv.js uses there.
   var VODAFONE = 'source:HDMI:1';
   var PLAYSTATION = 'source:HDMI:3';
+  // miguel-custom: cliamp Lofi radio (HTML5 Audio; CORS open on radio.cliamp.stream).
+  var LOFI_RADIO = 'lofi:radio';
+  var LOFI_STREAM = 'https://radio.cliamp.stream/lofi/stream';
+  var lofiAudio = null, lofiOn = false;
   var EXTRA_TILES = [
     {id: VODAFONE, title: 'Vodafone TV', icon: '', color: '#E60000'},
     // miguel-custom: PlayStation on HDMI 3; white logo on the PlayStation blue/black gradient.
-    {id: PLAYSTATION, title: 'PlayStation', icon: 'icons/playstation.svg', color: '#003087'}
+    {id: PLAYSTATION, title: 'PlayStation', icon: 'icons/playstation.svg', color: '#003087'},
+    {id: LOFI_RADIO, title: 'Lofi', icon: '', color: '#7C5CFF'}
   ];
 
   function shelfKey(app) {
@@ -422,7 +429,10 @@
       t.style.top = (854 + 126 - th) + 'px';
       t.style.width = tw + 'px';
       t.style.height = th + 'px';
-      face(shelf[i], t, wordFit(shelf[i].title, tw, 30));
+      var appTile = shelf[i], title = appTile.title;
+      if (appTile.id === LOFI_RADIO) title = lofiOn ? (title + ' · ▶') : title;
+      var shown = {id: appTile.id, title: title, icon: appTile.icon, color: appTile.color};
+      face(shown, t, wordFit(title, tw, 30));
       hover(t, Z.SHELF, i);
     }
     st.shelf = Math.min(st.shelf, Math.max(0, n - 1));
@@ -469,22 +479,48 @@
     var d = $('drawer');
     var old = d.querySelectorAll('.panel');
     for (var o = 0; o < old.length; o++) d.removeChild(old[o]);
-    var wx = Prefs.weather(), coins = Data.activeCoins(), qt = coins.length > 0;
-    var split = 80 + 1760 * 0.585;
-    if (wx) {
-      var w = el('div', 'panel glass', d);
-      w.id = 'weather';
-      w.style.left = '80px';
-      w.style.width = ((qt ? split - 16 : 1840) - 80) + 'px';
-      renderWeather(w);
+    var wx = Prefs.weather(), cal = Prefs.calendar(), coins = Data.activeCoins(), qt = coins.length > 0;
+    // miguel-custom: up to three panels (weather, calendar, quotes). Calendar = Omarchy clock month grid (no HEY).
+    var slots = [];
+    if (wx) slots.push('weather');
+    if (cal) slots.push('calendar');
+    if (qt) slots.push('prices');
+    var n = slots.length, gap = 16, left0 = 80, total = 1840 - left0;
+    var width = n ? Math.floor((total - gap * (n - 1)) / n) : total;
+    for (var i = 0; i < n; i++) {
+      var p = el('div', 'panel glass', d);
+      p.id = slots[i];
+      p.style.left = (left0 + i * (width + gap)) + 'px';
+      p.style.width = width + 'px';
+      if (slots[i] === 'weather') renderWeather(p);
+      else if (slots[i] === 'calendar') renderCalendar(p);
+      else renderPrices(p, coins);
     }
-    if (qt) {
-      var q = el('div', 'panel glass', d);
-      q.id = 'prices';
-      var left = wx ? split + 16 : 80;
-      q.style.left = left + 'px';
-      q.style.width = (1840 - left) + 'px';
-      renderPrices(q, coins);
+  }
+
+  /** Omarchy-style month grid (omarchy.clock panel): Monday-start, today ring, no remote events. */
+  function renderCalendar(card) {
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth(), today = now.getDate();
+    var monthName = now.toLocaleDateString(I18N.locale(), {month: 'long', year: 'numeric'});
+    el('div', 'head', card, monthName.charAt(0).toUpperCase() + monthName.slice(1));
+    el('div', 'side', card, tr('Calendário', 'Calendar', 'Calendario'));
+    var weekStart = 1;   // Monday, Omarchy default
+    var labels = el('div', 'cal-labels', card);
+    for (var w = 0; w < 7; w++) {
+      var dayIdx = (weekStart + w) % 7, probe = new Date(2024, 0, 7);   // a Sunday
+      while (probe.getDay() !== dayIdx) probe.setDate(probe.getDate() + 1);
+      el('span', 'cal-dow', labels, probe.toLocaleDateString(I18N.locale(), {weekday: 'narrow'}));
+    }
+    var firstDow = new Date(y, m, 1).getDay();
+    var lead = (firstDow - weekStart + 7) % 7;
+    var dim = new Date(y, m + 1, 0).getDate();
+    var grid = el('div', 'cal-grid', card);
+    for (var cell = 0; cell < 42; cell++) {
+      var dayNum = cell - lead + 1;
+      var cellEl = el('span', 'cal-day', grid);
+      if (dayNum < 1 || dayNum > dim) { cellEl.className += ' mute'; continue; }
+      cellEl.textContent = String(dayNum);
+      if (dayNum === today) cellEl.className += ' today';
     }
   }
 
@@ -614,6 +650,8 @@
         step: function () { openThemes(true); }},   // miguel-custom: the theme picker
       {label: tr('Widget do clima', 'Weather widget', 'Widget del clima'), toggle: Prefs.weather(),
         step: function () { Prefs.set('weather', !Prefs.weather()); renderPanels(); }},
+      {label: tr('Widget do calendário', 'Calendar widget', 'Widget del calendario'), toggle: Prefs.calendar(),
+        step: function () { Prefs.set('calendar', !Prefs.calendar()); renderPanels(); }},
       {label: tr('Widget de cotações', 'Quotes widget', 'Widget de cotizaciones'), toggle: Prefs.quotes(),
         step: function () { Prefs.set('quotes', !Prefs.quotes()); Data.settingsChanged(); }}
     ];
@@ -738,7 +776,46 @@
 
   // MARK: - Opening things
 
+  // miguel-custom: cliamp Lofi stream in the browser/TV WebView (CORS * on radio.cliamp.stream).
+  function toggleLofi() {
+    try {
+      if (!lofiAudio) {
+        lofiAudio = new Audio(LOFI_STREAM);
+        lofiAudio.preload = 'none';
+        lofiAudio.crossOrigin = 'anonymous';
+        lofiAudio.addEventListener('playing', function () { lofiOn = true; renderShelf(); });
+        lofiAudio.addEventListener('pause', function () { lofiOn = false; renderShelf(); });
+        lofiAudio.addEventListener('error', function () {
+          lofiOn = false;
+          toast(tr('Rádio Lofi indisponível', 'Lofi radio unavailable', 'Radio Lofi no disponible'));
+          renderShelf();
+        });
+      }
+      if (lofiOn) {
+        lofiAudio.pause();
+        toast(tr('Lofi pausada', 'Lofi paused', 'Lofi en pausa'));
+      } else {
+        var p = lofiAudio.play();
+        if (p && p.then) {
+          p.then(function () { toast(tr('Lofi a tocar', 'Lofi playing', 'Lofi en reproducción')); })
+           .catch(function () {
+             lofiOn = false;
+             toast(tr('Não deu para tocar a Lofi', "Couldn't play Lofi", 'No se pudo reproducir Lofi'));
+             renderShelf();
+           });
+        } else {
+          toast(tr('Lofi a tocar', 'Lofi playing', 'Lofi en reproducción'));
+        }
+      }
+      renderShelf();
+    } catch (e) {
+      lofiOn = false;
+      toast(tr('Rádio Lofi indisponível', 'Lofi radio unavailable', 'Radio Lofi no disponible'));
+    }
+  }
+
   function launcher(id, name) {
+    if (id === LOFI_RADIO) return function () { toggleLofi(); };
     return function () {
       TV.launch(id, null, function (ok) {
         if (!ok) toast(tr('Não deu para abrir ', "Couldn't open ", 'No se pudo abrir ') + (name || id));
@@ -1221,7 +1298,9 @@
     TV.apps(function (list) {
       apps = list;
       Data.setApps(apps);
-      if (TV.name === 'tizen') apps = apps.concat(EXTRA_TILES);   // miguel-custom: after setApps (not a streaming app)
+      // miguel-custom: HDMI extras on Samsung; Lofi radio tile on every platform (browser preview + TV).
+      if (TV.name === 'tizen') apps = apps.concat(EXTRA_TILES.filter(function (t) { return t.id !== LOFI_RADIO; }));
+      apps = apps.concat(EXTRA_TILES.filter(function (t) { return t.id === LOFI_RADIO; }));
       pickShelf();
       TV.inputs(function (list2) {
         inputs = list2;

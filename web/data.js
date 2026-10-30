@@ -47,6 +47,7 @@ var Prefs = (function () {
     temperature: function () { return pick('temperature', CONFIG.temperature || 'auto'); },
     theme: function () { return pick('theme', 'tokyo-night'); },   // miguel-custom: Omarchy Tokyo Night by default (was 'auto')
     weather: function () { return pick('weather', true); },
+    calendar: function () { return pick('calendar', true); },   // miguel-custom: Omarchy-style month grid in the drawer
     quotes: function () { return pick('quotes', CONFIG.showCrypto !== false); },
     coin: function (i) { var c = pick('coins', null); return c ? c[i] !== false : true; },
     shelf: function () { return pick('shelf', null); },

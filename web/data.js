@@ -47,7 +47,10 @@ var Prefs = (function () {
     temperature: function () { return pick('temperature', CONFIG.temperature || 'auto'); },
     theme: function () { return pick('theme', 'tokyo-night'); },   // miguel-custom: Omarchy Tokyo Night by default (was 'auto')
     weather: function () { return pick('weather', true); },
-    calendar: function () { return pick('calendar', true); },   // miguel-custom: Omarchy-style month grid in the drawer
+    calendar: function () { return pick('calendar', false); },   // miguel-custom: drawer calendar off — main cal is home center
+    // miguel-custom: Omarchy clock life bar (from Miguel's Omarchy shell.json).
+    birthYear: function () { return pick('birthYear', 1976); },
+    lifeExpectancy: function () { return pick('lifeExpectancy', 90); },
     quotes: function () { return pick('quotes', CONFIG.showCrypto !== false); },
     coin: function (i) { var c = pick('coins', null); return c ? c[i] !== false : true; },
     shelf: function () { return pick('shelf', null); },

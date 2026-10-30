@@ -181,7 +181,7 @@
   // MARK: - Focus
 
   var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', GALLERY: 'gallery', THEMES: 'themes', WS: 'ws'};   // miguel-custom: GALLERY, THEMES, WS
-  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, theme: 0, ws: Prefs.ws(), wsFocus: 0};   // miguel-custom: theme, ws
+  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, theme: 0, ws: Prefs.ws(), wsFocus: 0, calY: 0, calM: 0};   // miguel-custom: theme, ws, cal view
   var cards = [];
 
   function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.THEMES; }   // miguel-custom: THEMES
@@ -396,14 +396,125 @@
   window.addEventListener('online', renderBar);
   window.addEventListener('offline', renderBar);
 
+  // miguel-custom: Omarchy clock calendar math (year/life progress, month grid). Week starts Sunday (screenshot).
+  function calPad(n) { return (n < 10 ? '0' : '') + n; }
+  function calKey(y, m, d) { return y + '-' + calPad(m + 1) + '-' + calPad(d); }
+  function yearProgressPct(y, m, d) {
+    var start = Date.UTC(y, 0, 1), cur = Date.UTC(y, m, d), end = Date.UTC(y, 11, 31);
+    var total = (end - start) / 86400000 + 1, day = (cur - start) / 86400000 + 1;
+    return Math.round(Math.max(0, Math.min(1, (day - 1) / total)) * 100);
+  }
+  function lifeProgressPct(birth, expectancy) {
+    if (!birth || birth <= 0) return -1;
+    var age = new Date().getFullYear() - birth;
+    var span = expectancy > 0 ? expectancy : 90;
+    return Math.round(Math.max(0, Math.min(1, age / span)) * 100);
+  }
+  function ensureCalView() {
+    var now = new Date();
+    if (!st.calY) { st.calY = now.getFullYear(); st.calM = now.getMonth(); }
+  }
+  function moveCalMonth(delta) {
+    ensureCalView();
+    var t = new Date(st.calY, st.calM + delta, 1);
+    st.calY = t.getFullYear();
+    st.calM = t.getMonth();
+    renderClock();
+  }
+  function editLife() {
+    var born = window.prompt(tr('Ano de nascimento', 'Birth year', 'Año de nacimiento'), String(Prefs.birthYear() || ''));
+    if (born === null) return;
+    var exp = window.prompt(tr('Esperança de vida (anos)', 'Life expectancy (years)', 'Esperanza de vida (años)'), String(Prefs.lifeExpectancy() || 90));
+    if (exp === null) return;
+    var by = parseInt(born, 10), le = parseInt(exp, 10);
+    var nowY = new Date().getFullYear();
+    if (!(by >= nowY - 120 && by <= nowY)) { toast(tr('Ano inválido', 'Invalid year', 'Año inválido')); return; }
+    if (!(le > 0 && le <= 150)) le = 90;
+    Prefs.set('birthYear', by);
+    Prefs.set('lifeExpectancy', le);
+    renderClock();
+  }
+
   function renderClock() {
     renderBar();   // miguel-custom
-    var d = new Date(), c = $('clock');
-    c.firstChild.textContent = Data.time(d.getTime());
+    var c = $('clock'), now = new Date();
+    ensureCalView();
+    // Classic (non-Omarchy): keep big time + date.
+    if (!hasClass(body, 'omarchy')) {
+      c.innerHTML = '';
+      el('span', 'time', c, Data.time(now.getTime()));
+      var dateLine = '';
+      try { dateLine = now.toLocaleDateString(I18N.locale(), {weekday: 'long', day: 'numeric', month: 'long'}); }
+      catch (e) { dateLine = now.toDateString(); }
+      el('span', 'date', c, dateLine);
+      return;
+    }
+    // Omarchy: home-center calendar (title like "October 30", year/LIFE bars, month grid + arrows).
+    var todayKey = calKey(now.getFullYear(), now.getMonth(), now.getDate());
+    var hero;
     try {
-      c.lastChild.textContent = d.toLocaleDateString(I18N.locale(), {weekday: 'long', day: 'numeric', month: 'long'});
-    } catch (e) {
-      c.lastChild.textContent = d.toDateString();
+      hero = now.toLocaleDateString(I18N.locale(), {month: 'long', day: 'numeric'});
+    } catch (e2) {
+      hero = (now.getMonth() + 1) + '/' + now.getDate();
+    }
+    hero = hero.charAt(0).toUpperCase() + hero.slice(1);
+    var yPct = yearProgressPct(now.getFullYear(), now.getMonth(), now.getDate());
+    var lifePct = lifeProgressPct(Prefs.birthYear(), Prefs.lifeExpectancy());
+    var weekStart = 0;   // Sunday — matches Miguel's Omarchy screenshot
+    var view = new Date(st.calY, st.calM, 1);
+    var monthLabel;
+    try { monthLabel = view.toLocaleDateString(I18N.locale(), {month: 'long', year: 'numeric'}); }
+    catch (e3) { monthLabel = (st.calM + 1) + '/' + st.calY; }
+    monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+    c.innerHTML = '';
+    var heroEl = el('div', 'cal-hero', c, hero);
+    heroEl.onclick = function () { st.calY = now.getFullYear(); st.calM = now.getMonth(); renderClock(); };
+
+    var yearRow = el('div', 'cal-bar-row', c);
+    el('span', 'cal-bar-label', yearRow, String(now.getFullYear()));
+    var yearTrack = el('div', 'cal-bar-track', yearRow);
+    var yearFill = el('div', 'cal-bar-fill', yearTrack);
+    yearFill.style.width = yPct + '%';
+    el('span', 'cal-bar-pct', yearRow, yPct + '%');
+
+    var lifeRow = el('div', 'cal-bar-row life', c);
+    el('span', 'cal-bar-label', lifeRow, 'LIFE');
+    var lifeTrack = el('div', 'cal-bar-track', lifeRow);
+    var lifeFill = el('div', 'cal-bar-fill', lifeTrack);
+    if (lifePct < 0) {
+      lifeFill.style.width = '0%';
+      el('span', 'cal-bar-pct', lifeRow, '—');
+    } else {
+      lifeFill.style.width = lifePct + '%';
+      el('span', 'cal-bar-pct', lifeRow, lifePct + '%');
+    }
+    lifeRow.onclick = function () { editLife(); };
+    lifeRow.title = tr('Clica para definir nascimento e esperança de vida', 'Click to set birth year and life expectancy', 'Clic para definir nacimiento y esperanza de vida');
+
+    var nav = el('div', 'cal-nav', c);
+    var prev = el('button', 'cal-arrow', nav, '‹');
+    prev.onclick = function () { moveCalMonth(-1); };
+    el('span', 'cal-month', nav, monthLabel);
+    var next = el('button', 'cal-arrow', nav, '›');
+    next.onclick = function () { moveCalMonth(1); };
+
+    var labels = el('div', 'cal-labels', c);
+    for (var w = 0; w < 7; w++) {
+      var dayIdx = (weekStart + w) % 7, probe = new Date(2024, 0, 7);
+      while (probe.getDay() !== dayIdx) probe.setDate(probe.getDate() + 1);
+      el('span', 'cal-dow', labels, probe.toLocaleDateString(I18N.locale(), {weekday: 'narrow'}).toUpperCase());
+    }
+    var firstDow = new Date(st.calY, st.calM, 1).getDay();
+    var lead = (firstDow - weekStart + 7) % 7;
+    var dim = new Date(st.calY, st.calM + 1, 0).getDate();
+    var grid = el('div', 'cal-grid', c);
+    for (var cell = 0; cell < 42; cell++) {
+      var dayNum = cell - lead + 1;
+      var cellEl = el('span', 'cal-day', grid);
+      if (dayNum < 1 || dayNum > dim) { cellEl.className += ' mute'; continue; }
+      cellEl.textContent = String(dayNum);
+      if (calKey(st.calY, st.calM, dayNum) === todayKey) cellEl.className += ' today';
     }
   }
 
@@ -1274,6 +1385,8 @@
     else if (k === TV.keys.down) move(0, 1);
     else if (k === TV.keys.ok) activate();
     else if (k === TV.keys.back || k === 27 || k === 8) back();
+    else if (e.key === '[' || e.key === '{') { moveCalMonth(-1); }
+    else if (e.key === ']' || e.key === '}') { moveCalMonth(1); }
     else return;
     e.preventDefault();
   });

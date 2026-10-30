@@ -575,7 +575,7 @@ var Data = (function () {
     hour: function (at) {
       var d = new Date(at), h = d.getHours();
       if (I18N.lang === 'en') return (h % 12 || 12) + (h < 12 ? ' AM' : ' PM');
-      if (I18N.lang === 'de') return (h < 10 ? '0' : '') + h + ' Uhr';
+      if (I18N.lang === 'de' || I18N.lang === 'de-AT') return (h < 10 ? '0' : '') + h + ' Uhr';
       return (I18N.lang === 'es' || I18N.lang === 'ru') ? (h < 10 ? '0' : '') + h + ':00' : h + 'h';
     },
     time: function (at) {

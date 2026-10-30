@@ -602,8 +602,11 @@
     var lang = Prefs.language(), unit = Prefs.temperature(), theme = Prefs.theme();
     var auto = tr('Automático', 'Automatic', 'Automático'), on = tr('Ligado', 'On', 'Activado'), off = tr('Desligado', 'Off', 'Desactivado');
     var rows = [
-      {label: tr('Idioma', 'Language', 'Idioma'), value: lang === 'ru' ? 'Русский' : lang === 'de' ? 'Deutsch' : lang === 'pt' ? 'Português' : lang === 'en' ? 'English' : lang === 'es' ? 'Español' : auto,
-        step: function (d) { cycle('language', ['auto', 'de', 'en', 'es', 'pt', 'ru'], lang, d); I18N.set(Prefs.language()); renderAll(); }},
+      {label: tr('Idioma', 'Language', 'Idioma'), value: ({
+          'ru': 'Русский', 'de': 'Deutsch', 'de-AT': 'Österreichisch', 'pt': 'Português', 'en': 'English', 'es': 'Español',
+          'it': 'Italiano', 'fr': 'Français', 'da': 'Dansk', 'sv': 'Svenska', 'nl-BE': 'Vlaams'
+        })[lang] || auto,
+        step: function (d) { cycle('language', ['auto', 'da', 'de', 'de-AT', 'en', 'es', 'fr', 'it', 'nl-BE', 'pt', 'ru', 'sv'], lang, d); I18N.set(Prefs.language()); renderAll(); }},
       {label: tr('Temperatura', 'Temperature', 'Temperatura'), value: unit === 'C' ? '°C' : unit === 'F' ? '°F' : auto,
         step: function (d) { cycle('temperature', ['auto', 'C', 'F'], unit, d); renderPanels(); }},
       // miguel-custom: the Omarchy themes first, then the original looks.
@@ -669,7 +672,8 @@
 
   function ordinal(n) {
     if (I18N.lang === 'ru') return n + '-е';
-    if (I18N.lang === 'de') return n + '.';
+    if (I18N.lang === 'de' || I18N.lang === 'de-AT') return n + '.';
+    if (I18N.lang === 'sv' || I18N.lang === 'da') return n + '.';
     if (I18N.lang !== 'en') return n + 'º';
     var s = ['th', 'st', 'nd', 'rd'], v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
